@@ -139,24 +139,28 @@ export function removeCard(s: GameState, card: CardId): ZoneName {
   if (!z) throw new RuleError(`Card ${card} is nowhere`);
   const arr = zone(s, z);
   arr.splice(arr.indexOf(card), 1);
-  // keep Cheat! attachment consistent
+  return z;
+}
+
+/** Cheat! stays only while both it and its item are equipped by the same player. */
+function fixCheats(s: GameState) {
   for (const id of s.order) {
     const p = s.players[id];
-    if (p.cheat && (p.cheat.card === card || p.cheat.item === card)) {
-      const other = p.cheat.card === card ? p.cheat.item : p.cheat.card;
-      p.cheat = null;
-      if (other !== card && p.equipped.includes(other) && cardOf(other).id === 'cheat') {
-        p.equipped.splice(p.equipped.indexOf(other), 1);
-        discardPile(s, other).push(other);
-      }
+    if (!p.cheat) continue;
+    if (p.equipped.includes(p.cheat.card) && p.equipped.includes(p.cheat.item)) continue;
+    const ch = p.cheat.card;
+    p.cheat = null;
+    if (p.equipped.includes(ch)) {
+      p.equipped.splice(p.equipped.indexOf(ch), 1);
+      s.discard_door.push(ch);
     }
   }
-  return z;
 }
 
 export function moveCard(s: GameState, card: CardId, to: ZoneName) {
   removeCard(s, card);
   zone(s, to).push(card);
+  fixCheats(s);
 }
 
 export function discardPile(s: GameState, card: CardId): CardId[] {
@@ -167,6 +171,7 @@ export function discardPile(s: GameState, card: CardId): CardId[] {
 export function discard(s: GameState, card: CardId) {
   removeCard(s, card);
   discardPile(s, card).push(card);
+  fixCheats(s);
 }
 
 export function drawOne(s: GameState, deck: Deck): CardId | null {

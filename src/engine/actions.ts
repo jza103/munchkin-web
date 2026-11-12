@@ -661,11 +661,9 @@ const H: { [K in Action['type']]: Handler<K> } = {
     },
     exec(s, a) {
       const p = player(s, a.player);
-      if (a.cheat) {
-        moveCard(s, a.cheat, `${a.player}.equipped`);
-        p.cheat = { card: a.cheat, item: a.card };
-      }
+      if (a.cheat) moveCard(s, a.cheat, `${a.player}.equipped`);
       moveCard(s, a.card, `${a.player}.equipped`);
+      if (a.cheat) p.cheat = { card: a.cheat, item: a.card };
       addLog(s, 'equip', `${a.player} equips ${nameOf(a.card)}${a.cheat ? ' (Cheat!)' : ''}.`, a.player);
     },
   },
@@ -683,11 +681,6 @@ const H: { [K in Action['type']]: Handler<K> } = {
     exec(s, a) {
       const p = player(s, a.player);
       const wasEquipped = p.equipped.includes(a.card);
-      if (isCheated(p, a.card)) {
-        const ch = p.cheat!.card;
-        p.cheat = null;
-        discard(s, ch);
-      }
       moveCard(s, a.card, `${a.player}.carried`);
       addLog(s, 'equip', `${a.player} ${wasEquipped ? 'unequips' : 'puts on the table'} ${nameOf(a.card)} (carried).`, a.player);
     },
