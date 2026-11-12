@@ -715,8 +715,15 @@ export function returnBorrowed(s: GameState) {
   const b = s.combat?.borrowed;
   if (!b) return;
   s.combat!.borrowed = null;
+  if (player(s, b.owner).dead) {
+    discard(s, b.card);
+    return addLog(s, 'effect', `${nameOf(b.card)} can't go back to ${b.owner} (dead) and is discarded.`, b.owner);
+  }
   moveCard(s, b.card, `${b.owner}.${b.zone}`);
   addLog(s, 'effect', `${nameOf(b.card)} goes back to ${b.owner}.`, b.owner);
+  // the owner may have lost the race/class it needs, or picked up another Big item, meanwhile
+  normalize(s, b.owner);
+  now(s, { t: 'checkBig', player: b.owner });
 }
 
 function endCombat(s: GameState) {
@@ -786,9 +793,14 @@ export function nextTurn(s: GameState) {
 }
 
 export function endGame(s: GameState) {
-  s.phase = 'gameOver';
   s.pending = null;
   s.queue = [];
+  if (s.combat) {
+    returnBorrowed(s);
+    for (const card of [...s.play]) discard(s, card);
+    s.combat = null;
+  }
+  s.phase = 'gameOver';
   addLog(s, 'gameOver', `🏆 ${s.winners.join(' and ')} reach${s.winners.length > 1 ? '' : 'es'} Level 10 and win${s.winners.length > 1 ? '' : 's'}!`);
   for (const id of s.order) addLog(s, 'reveal', `${id}'s hand: ${s.players[id].hand.map(nameOf).join(', ') || '-'}`, id);
 }

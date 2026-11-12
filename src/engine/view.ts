@@ -2,10 +2,11 @@
 // Other hands become "?door#n" / "?treasure#n" (hand counts by card back are public),
 // and the draw piles are hidden too.
 import { deckOf } from './cards';
+import { cloneState } from './state';
 import type { GameState, PlayerId } from './types';
 
 export function viewFor(s: GameState, viewer: PlayerId): GameState {
-  const v = structuredClone(s);
+  const v = cloneState(s);
   let n = 0;
   for (const id of v.order) {
     if (id === viewer) continue;

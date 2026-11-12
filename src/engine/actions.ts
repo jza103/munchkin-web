@@ -34,7 +34,6 @@ import {
   hasHalfBreed,
   hasPower,
   hasSuperMunchkin,
-  isCheated,
   isLeader,
   matches,
   maxClasses,
@@ -55,6 +54,7 @@ import {
   moveCard,
   others,
   player,
+  cloneState,
   roll,
   zone,
 } from './state';
@@ -1349,7 +1349,7 @@ export function check(s: GameState, a: Action): string | null {
 export function apply(s: GameState, a: Action): ApplyResult {
   const err = check(s, a);
   if (err) return { ok: false, error: err };
-  const n = structuredClone(s);
+  const n = cloneState(s);
   (H[a.type] as Handler<typeof a.type>).exec(n, a as never);
   if (!GM_ACTIONS.has(a.type)) n.flags.acted = true;
   drain(n);

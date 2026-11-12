@@ -1,5 +1,5 @@
 // Game state construction and low-level zone operations (the skill's munchkin.py, in TypeScript).
-import { ALL_IDS, DOOR_IDS, TREASURE_IDS, cardOf, deckOf, isRaceClassCard, nameOf } from './cards';
+import { ALL_IDS, DOOR_IDS, TREASURE_IDS, deckOf, isRaceClassCard, nameOf } from './cards';
 import { rollDie, seedFrom, shuffle } from './rng';
 import type { CardId, Deck, Gender, GameState, PlayerId, PlayerState } from './types';
 
@@ -79,6 +79,7 @@ export function newGame(opts: NewGameOptions): GameState {
 
 export function addLog(s: GameState, type: string, text: string, player?: PlayerId, data?: Record<string, unknown>) {
   s.log.push(text);
+  if (s.log.length > 600) s.log.splice(0, s.log.length - 600);
   s.events.push({ seq: ++s.eventSeq, turn: s.turnNumber, type, player, text, data });
   // keep saves small: the event list is a rolling window, the text log is kept whole
   if (s.events.length > 400) s.events.splice(0, s.events.length - 400);
@@ -266,3 +267,41 @@ export function describe(card: CardId) {
 }
 
 export { ALL_IDS };
+
+const deep = <T>(x: T): T => (x === null || x === undefined ? x : JSON.parse(JSON.stringify(x)));
+
+/**
+ * Fast copy of a game state. Card zones are copied; log lines and event objects are
+ * immutable once written, so those arrays are copied shallowly.
+ */
+export function cloneState(s: GameState): GameState {
+  const players: GameState['players'] = {};
+  for (const id of s.order) {
+    const p = s.players[id];
+    players[id] = {
+      ...p,
+      equipped: [...p.equipped],
+      carried: [...p.carried],
+      curses: [...p.curses],
+      hand: [...p.hand],
+      cheat: p.cheat ? { ...p.cheat } : null,
+    };
+  }
+  return {
+    ...s,
+    order: [...s.order],
+    players,
+    deck_door: [...s.deck_door],
+    deck_treasure: [...s.deck_treasure],
+    discard_door: [...s.discard_door],
+    discard_treasure: [...s.discard_treasure],
+    play: [...s.play],
+    combat: deep(s.combat),
+    pending: deep(s.pending),
+    queue: deep(s.queue),
+    flags: { ...s.flags },
+    winners: [...s.winners],
+    log: [...s.log],
+    events: [...s.events],
+  };
+}
