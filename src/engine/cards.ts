@@ -20,7 +20,18 @@ export function baseId(card: CardId): string {
   return i < 0 ? card : card.slice(0, i);
 }
 
+const HIDDEN: Record<string, Card> = {
+  '?door': { id: '?door', name: 'Door card', deck: 'door', kind: 'other', copies: 0, text: '(hidden)', usable: 'anytime', effect: { op: 'none' } },
+  '?treasure': { id: '?treasure', name: 'Treasure card', deck: 'treasure', kind: 'other', copies: 0, text: '(hidden)', usable: 'anytime', effect: { op: 'none' } },
+};
+
+/** Hidden card ids used in player views: "?door#3", "?treasure#1". */
+export function isHidden(card: CardId) {
+  return card.startsWith('?');
+}
+
 export function cardOf(card: CardId): Card {
+  if (card.startsWith('?')) return HIDDEN[baseId(card)];
   const c = CARD_BY_ID[baseId(card)];
   if (!c) throw new Error(`Unknown card ${card}`);
   return c;

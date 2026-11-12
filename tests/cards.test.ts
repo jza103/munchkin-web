@@ -109,3 +109,34 @@ describe('cards.json', () => {
     }
   });
 });
+
+import { CUSTOM_CARD_HANDLERS, handlerFor } from '../src/engine/actions';
+import { IMPLEMENTED_OPS, OP_HANDLERS } from '../src/engine/flow';
+import { ALL_IDS as IDS } from '../src/engine/cards';
+
+describe('every card has an implemented effect', () => {
+  const opsOf = (ops: Op[]): Op[] =>
+    ops.flatMap((o) => [
+      o,
+      ...(o.op === 'rollThen' ? o.table.flatMap((r) => opsOf(r.then)) : []),
+      ...(o.op === 'if' ? [...opsOf(o.then), ...opsOf(o.else)] : []),
+      ...(o.op === 'choice' ? o.options.flatMap((x) => opsOf(x.then)) : []),
+      ...('orElse' in o && o.orElse ? opsOf(o.orElse) : []),
+    ]);
+
+  it.each(CARDS.map((c) => [c.name, c] as const))('%s', (_n, c) => {
+    const ops: Op[] =
+      c.kind === 'monster'
+        ? [...c.badStuff, ...(c.rules.onEscape ?? []), ...(c.rules.onEnter ?? [])]
+        : 'effect' in c
+          ? [c.effect]
+          : [];
+    for (const o of opsOf(ops)) {
+      expect(IMPLEMENTED_OPS.has(o.op), `${c.name}: op ${o.op}`).toBe(true);
+      if (o.op === 'custom') expect(CUSTOM_CARD_HANDLERS.includes(o.handler) || OP_HANDLERS.has(o.handler), `${c.name}: handler ${o.handler}`).toBe(true);
+    }
+    const inst = IDS.find((id) => id.startsWith(`${c.id}#`))!;
+    // playable cards resolve to a handler; the rest are monsters, races/classes, items (equip) or curse ops
+    if (c.kind === 'oneShot' || c.kind === 'enhancer' || c.kind === 'curse' || c.kind === 'other') expect(handlerFor(inst)?.h, c.name).toBeDefined();
+  });
+});

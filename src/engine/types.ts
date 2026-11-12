@@ -235,7 +235,8 @@ export type Task =
   | { t: 'run'; runner: PlayerId; monster: number; copy: number }
   | { t: 'endCombat'; won: boolean }
   | { t: 'winCombat' }
-  | { t: 'enter'; monster: number }
+  | { t: 'enter'; card: CardId }
+  | { t: 'giveTo'; from: PlayerId; card: CardId }
   | { t: 'checkBig'; player: PlayerId }
   | { t: 'takeItem'; taker: PlayerId; victim: PlayerId; source: CardId }
   | { t: 'incomeTaxOther'; player: PlayerId; value: number }
@@ -298,7 +299,9 @@ export type ChooseReason =
   | 'loseClassWhich';
 
 export type ChooseCtx = Record<string, unknown> & { victim?: PlayerId; source?: CardId };
-export type OptionCtx = { kind: 'opsChoice'; victim: PlayerId; source: CardId; options: Op[][] };
+export type OptionCtx =
+  | { kind: 'opsChoice'; victim: PlayerId; source: CardId; options: Op[][] }
+  | { kind: 'giveTo'; from: PlayerId; card: CardId; recipients: PlayerId[] };
 export type ResurrectCtx =
   | { kind: 'kick' }
   | { kind: 'reward'; split: { helper: PlayerId; deal: number } | null };
