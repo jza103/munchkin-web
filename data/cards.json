@@ -1,0 +1,2682 @@
+[
+ {
+  "id": "3-872-orcs",
+  "name": "3,872 Orcs",
+  "deck": "door",
+  "kind": "monster",
+  "copies": 1,
+  "text": "Monster L10. +6 vs Dwarves. Bad: roll; 1-2 dead, else lose that many levels. 3 Tr.",
+  "level": 10,
+  "treasures": 3,
+  "levelsGained": 1,
+  "undead": false,
+  "bonusVs": [
+   {
+    "if": {
+     "race": "dwarf"
+    },
+    "bonus": 6
+   }
+  ],
+  "runMod": 0,
+  "noPursueAtOrBelow": null,
+  "badStuff": [
+   {
+    "op": "rollThen",
+    "table": [
+     {
+      "min": 1,
+      "max": 2,
+      "then": [
+       {
+        "op": "die"
+       }
+      ]
+     },
+     {
+      "min": 3,
+      "max": 6,
+      "then": [
+       {
+        "op": "loseLevels",
+        "n": "roll"
+       }
+      ]
+     }
+    ]
+   }
+  ],
+  "rules": {}
+ },
+ {
+  "id": "amazon",
+  "name": "Amazon",
+  "deck": "door",
+  "kind": "monster",
+  "copies": 1,
+  "text": "Monster L8. Women: no fight, take 1 Tr. Bad: lose class (or 3 levels). 2 Tr.",
+  "level": 8,
+  "treasures": 2,
+  "levelsGained": 1,
+  "undead": false,
+  "bonusVs": [],
+  "runMod": 0,
+  "noPursueAtOrBelow": null,
+  "badStuff": [
+   {
+    "op": "loseClass",
+    "orElse": [
+     {
+      "op": "loseLevels",
+      "n": 3
+     }
+    ]
+   }
+  ],
+  "rules": {
+   "avoid": {
+    "if": {
+     "gender": "female"
+    },
+    "optional": false,
+    "treasures": 1
+   }
+  }
+ },
+ {
+  "id": "bigfoot",
+  "name": "Bigfoot",
+  "deck": "door",
+  "kind": "monster",
+  "copies": 1,
+  "text": "Monster L12. +3 vs Dwarves and Halflings. Bad: lose headgear. 3 Tr.",
+  "level": 12,
+  "treasures": 3,
+  "levelsGained": 1,
+  "undead": false,
+  "bonusVs": [
+   {
+    "if": {
+     "race": [
+      "dwarf",
+      "halfling"
+     ]
+    },
+    "bonus": 3
+   }
+  ],
+  "runMod": 0,
+  "noPursueAtOrBelow": null,
+  "badStuff": [
+   {
+    "op": "loseSlot",
+    "slot": "head"
+   }
+  ],
+  "rules": {}
+ },
+ {
+  "id": "bullrog",
+  "name": "Bullrog",
+  "deck": "door",
+  "kind": "monster",
+  "copies": 1,
+  "text": "Monster L18. Won't pursue L4 or below. Bad: dead. 5 Tr, 2 levels.",
+  "level": 18,
+  "treasures": 5,
+  "levelsGained": 2,
+  "undead": false,
+  "bonusVs": [],
+  "runMod": 0,
+  "noPursueAtOrBelow": 4,
+  "badStuff": [
+   {
+    "op": "die"
+   }
+  ],
+  "rules": {}
+ },
+ {
+  "id": "crabs",
+  "name": "Crabs",
+  "deck": "door",
+  "kind": "monster",
+  "copies": 1,
+  "text": "Monster L1. Can't run. Bad: lose armor and everything below the waist. 1 Tr.",
+  "level": 1,
+  "treasures": 1,
+  "levelsGained": 1,
+  "undead": false,
+  "bonusVs": [],
+  "runMod": 0,
+  "noPursueAtOrBelow": null,
+  "badStuff": [
+   {
+    "op": "loseSlot",
+    "slot": "armor"
+   },
+   {
+    "op": "loseBelowWaist"
+   }
+  ],
+  "rules": {
+   "cantRun": true
+  }
+ },
+ {
+  "id": "drooling-slime",
+  "name": "Drooling Slime",
+  "deck": "door",
+  "kind": "monster",
+  "copies": 1,
+  "text": "Monster L1. +4 vs Elves. Bad: discard footgear or lose a level. 1 Tr.",
+  "level": 1,
+  "treasures": 1,
+  "levelsGained": 1,
+  "undead": false,
+  "bonusVs": [
+   {
+    "if": {
+     "race": "elf"
+    },
+    "bonus": 4
+   }
+  ],
+  "runMod": 0,
+  "noPursueAtOrBelow": null,
+  "badStuff": [
+   {
+    "op": "loseSlot",
+    "slot": "foot",
+    "orElse": [
+     {
+      "op": "loseLevels",
+      "n": 1
+     }
+    ]
+   }
+  ],
+  "rules": {}
+ },
+ {
+  "id": "face-sucker",
+  "name": "Face Sucker",
+  "deck": "door",
+  "kind": "monster",
+  "copies": 1,
+  "text": "Monster L8. +6 vs Elves. Bad: lose headgear and a level. 2 Tr.",
+  "level": 8,
+  "treasures": 2,
+  "levelsGained": 1,
+  "undead": false,
+  "bonusVs": [
+   {
+    "if": {
+     "race": "elf"
+    },
+    "bonus": 6
+   }
+  ],
+  "runMod": 0,
+  "noPursueAtOrBelow": null,
+  "badStuff": [
+   {
+    "op": "loseSlot",
+    "slot": "head"
+   },
+   {
+    "op": "loseLevels",
+    "n": 1
+   }
+  ],
+  "rules": {}
+ },
+ {
+  "id": "floating-nose",
+  "name": "Floating Nose",
+  "deck": "door",
+  "kind": "monster",
+  "copies": 1,
+  "text": "Monster L10. Bad: lose 3 levels. 3 Tr.",
+  "level": 10,
+  "treasures": 3,
+  "levelsGained": 1,
+  "undead": false,
+  "bonusVs": [],
+  "runMod": 0,
+  "noPursueAtOrBelow": null,
+  "badStuff": [
+   {
+    "op": "loseLevels",
+    "n": 3
+   }
+  ],
+  "rules": {}
+ },
+ {
+  "id": "flying-frogs",
+  "name": "Flying Frogs",
+  "deck": "door",
+  "kind": "monster",
+  "copies": 1,
+  "text": "Monster L2. -1 to run. Bad: lose 2 levels. 1 Tr.",
+  "level": 2,
+  "treasures": 1,
+  "levelsGained": 1,
+  "undead": false,
+  "bonusVs": [],
+  "runMod": -1,
+  "noPursueAtOrBelow": null,
+  "badStuff": [
+   {
+    "op": "loseLevels",
+    "n": 2
+   }
+  ],
+  "rules": {}
+ },
+ {
+  "id": "gazebo",
+  "name": "Gazebo",
+  "deck": "door",
+  "kind": "monster",
+  "copies": 1,
+  "text": "Monster L8. Nobody can help you. Bad: lose 3 levels. 2 Tr.",
+  "level": 8,
+  "treasures": 2,
+  "levelsGained": 1,
+  "undead": false,
+  "bonusVs": [],
+  "runMod": 0,
+  "noPursueAtOrBelow": null,
+  "badStuff": [
+   {
+    "op": "loseLevels",
+    "n": 3
+   }
+  ],
+  "rules": {
+   "noHelp": true
+  }
+ },
+ {
+  "id": "gelatinous-octahedron",
+  "name": "Gelatinous Octahedron",
+  "deck": "door",
+  "kind": "monster",
+  "copies": 1,
+  "text": "Monster L2. +1 to run. Bad: drop all Big items. 1 Tr.",
+  "level": 2,
+  "treasures": 1,
+  "levelsGained": 1,
+  "undead": false,
+  "bonusVs": [],
+  "runMod": 1,
+  "noPursueAtOrBelow": null,
+  "badStuff": [
+   {
+    "op": "loseBigItems"
+   }
+  ],
+  "rules": {}
+ },
+ {
+  "id": "ghoulfiends",
+  "name": "Ghoulfiends",
+  "deck": "door",
+  "kind": "monster",
+  "copies": 1,
+  "text": "Monster L8. Undead. Level only, no item bonuses. Bad: drop to lowest player's level. 2 Tr.",
+  "level": 8,
+  "treasures": 2,
+  "levelsGained": 1,
+  "undead": true,
+  "bonusVs": [],
+  "runMod": 0,
+  "noPursueAtOrBelow": null,
+  "badStuff": [
+   {
+    "op": "setLevel",
+    "to": "lowest"
+   }
+  ],
+  "rules": {
+   "levelOnly": true
+  }
+ },
+ {
+  "id": "harpies",
+  "name": "Harpies",
+  "deck": "door",
+  "kind": "monster",
+  "copies": 1,
+  "text": "Monster L4. +5 vs Wizards. Bad: lose 2 levels. 2 Tr.",
+  "level": 4,
+  "treasures": 2,
+  "levelsGained": 1,
+  "undead": false,
+  "bonusVs": [
+   {
+    "if": {
+     "class": "wizard"
+    },
+    "bonus": 5
+   }
+  ],
+  "runMod": 0,
+  "noPursueAtOrBelow": null,
+  "badStuff": [
+   {
+    "op": "loseLevels",
+    "n": 2
+   }
+  ],
+  "rules": {}
+ },
+ {
+  "id": "hippogriff",
+  "name": "Hippogriff",
+  "deck": "door",
+  "kind": "monster",
+  "copies": 1,
+  "text": "Monster L16. Won't pursue L3 or below. Bad: each player takes an item of yours. 4 Tr, 2 levels.",
+  "level": 16,
+  "treasures": 4,
+  "levelsGained": 2,
+  "undead": false,
+  "bonusVs": [],
+  "runMod": 0,
+  "noPursueAtOrBelow": 3,
+  "badStuff": [
+   {
+    "op": "othersTakeItem",
+    "who": "each"
+   }
+  ],
+  "rules": {}
+ },
+ {
+  "id": "insurance-salesman",
+  "name": "Insurance Salesman",
+  "deck": "door",
+  "kind": "monster",
+  "copies": 1,
+  "text": "Monster L14. Fire does nothing. Bad: lose 1,000g of items. 4 Tr.",
+  "level": 14,
+  "treasures": 4,
+  "levelsGained": 1,
+  "undead": false,
+  "bonusVs": [],
+  "runMod": 0,
+  "noPursueAtOrBelow": null,
+  "badStuff": [
+   {
+    "op": "loseGold",
+    "amount": 1000
+   }
+  ],
+  "rules": {
+   "fireImmune": true
+  }
+ },
+ {
+  "id": "king-tut",
+  "name": "King Tut",
+  "deck": "door",
+  "kind": "monster",
+  "copies": 1,
+  "text": "Monster L16. Undead. Won't pursue L3 or below. Bad: lose all items and hand. 4 Tr, 2 levels.",
+  "level": 16,
+  "treasures": 4,
+  "levelsGained": 2,
+  "undead": true,
+  "bonusVs": [],
+  "runMod": 0,
+  "noPursueAtOrBelow": 3,
+  "badStuff": [
+   {
+    "op": "loseAllItems"
+   },
+   {
+    "op": "discardHand"
+   }
+  ],
+  "rules": {}
+ },
+ {
+  "id": "lame-goblin",
+  "name": "Lame Goblin",
+  "deck": "door",
+  "kind": "monster",
+  "copies": 1,
+  "text": "Monster L1. +1 to run. Bad: lose a level. 1 Tr.",
+  "level": 1,
+  "treasures": 1,
+  "levelsGained": 1,
+  "undead": false,
+  "bonusVs": [],
+  "runMod": 1,
+  "noPursueAtOrBelow": null,
+  "badStuff": [
+   {
+    "op": "loseLevels",
+    "n": 1
+   }
+  ],
+  "rules": {}
+ },
+ {
+  "id": "large-angry-chicken",
+  "name": "Large Angry Chicken",
+  "deck": "door",
+  "kind": "monster",
+  "copies": 1,
+  "text": "Monster L2. Extra level if killed with fire. Bad: lose a level. 1 Tr.",
+  "level": 2,
+  "treasures": 1,
+  "levelsGained": 1,
+  "undead": false,
+  "bonusVs": [],
+  "runMod": 0,
+  "noPursueAtOrBelow": null,
+  "badStuff": [
+   {
+    "op": "loseLevels",
+    "n": 1
+   }
+  ],
+  "rules": {
+   "fireBonusLevels": 1
+  }
+ },
+ {
+  "id": "lawyers",
+  "name": "Lawyers",
+  "deck": "door",
+  "kind": "monster",
+  "copies": 1,
+  "text": "Monster L6. Won't attack Thieves. Bad: give 2 cards to others. 2 Tr.",
+  "level": 6,
+  "treasures": 2,
+  "levelsGained": 1,
+  "undead": false,
+  "bonusVs": [],
+  "runMod": 0,
+  "noPursueAtOrBelow": null,
+  "badStuff": [
+   {
+    "op": "if",
+    "cond": {
+     "class": "thief"
+    },
+    "then": [],
+    "else": [
+     {
+      "op": "giveCards",
+      "n": 2
+     }
+    ]
+   }
+  ],
+  "rules": {
+   "avoid": {
+    "if": {
+     "class": "thief"
+    },
+    "optional": true,
+    "treasures": 0
+   }
+  }
+ },
+ {
+  "id": "leperchaun",
+  "name": "Leperchaun",
+  "deck": "door",
+  "kind": "monster",
+  "copies": 1,
+  "text": "Monster L4. +5 vs Elves. Bad: players to your left and right each take an item. 2 Tr.",
+  "level": 4,
+  "treasures": 2,
+  "levelsGained": 1,
+  "undead": false,
+  "bonusVs": [
+   {
+    "if": {
+     "race": "elf"
+    },
+    "bonus": 5
+   }
+  ],
+  "runMod": 0,
+  "noPursueAtOrBelow": null,
+  "badStuff": [
+   {
+    "op": "othersTakeItem",
+    "who": "leftRight"
+   }
+  ],
+  "rules": {}
+ },
+ {
+  "id": "maul-rat",
+  "name": "Maul Rat",
+  "deck": "door",
+  "kind": "monster",
+  "copies": 1,
+  "text": "Monster L1. +3 vs Clerics. Bad: lose a level. 1 Tr.",
+  "level": 1,
+  "treasures": 1,
+  "levelsGained": 1,
+  "undead": false,
+  "bonusVs": [
+   {
+    "if": {
+     "class": "cleric"
+    },
+    "bonus": 3
+   }
+  ],
+  "runMod": 0,
+  "noPursueAtOrBelow": null,
+  "badStuff": [
+   {
+    "op": "loseLevels",
+    "n": 1
+   }
+  ],
+  "rules": {}
+ },
+ {
+  "id": "mr-bones",
+  "name": "Mr. Bones",
+  "deck": "door",
+  "kind": "monster",
+  "copies": 1,
+  "text": "Monster L2. Undead. Bad: lose 2 levels (1 even if you escape). 1 Tr.",
+  "level": 2,
+  "treasures": 1,
+  "levelsGained": 1,
+  "undead": true,
+  "bonusVs": [],
+  "runMod": 0,
+  "noPursueAtOrBelow": null,
+  "badStuff": [
+   {
+    "op": "loseLevels",
+    "n": 2
+   }
+  ],
+  "rules": {
+   "onEscape": [
+    {
+     "op": "loseLevels",
+     "n": 1
+    }
+   ]
+  }
+ },
+ {
+  "id": "net-troll",
+  "name": "Net Troll",
+  "deck": "door",
+  "kind": "monster",
+  "copies": 1,
+  "text": "Monster L10. Bad: each higher-level player takes an item of yours. 3 Tr.",
+  "level": 10,
+  "treasures": 3,
+  "levelsGained": 1,
+  "undead": false,
+  "bonusVs": [],
+  "runMod": 0,
+  "noPursueAtOrBelow": null,
+  "badStuff": [
+   {
+    "op": "othersTakeItem",
+    "who": "higherLevel"
+   }
+  ],
+  "rules": {}
+ },
+ {
+  "id": "pit-bull",
+  "name": "Pit Bull",
+  "deck": "door",
+  "kind": "monster",
+  "copies": 1,
+  "text": "Monster L2. Bad: lose a level. 1 Tr.",
+  "level": 2,
+  "treasures": 1,
+  "levelsGained": 1,
+  "undead": false,
+  "bonusVs": [],
+  "runMod": 0,
+  "noPursueAtOrBelow": null,
+  "badStuff": [
+   {
+    "op": "loseLevels",
+    "n": 1
+   }
+  ],
+  "rules": {}
+ },
+ {
+  "id": "platycore",
+  "name": "Platycore",
+  "deck": "door",
+  "kind": "monster",
+  "copies": 1,
+  "text": "Monster L6. +6 vs Wizards. Bad: lose your hand or 2 levels. 2 Tr.",
+  "level": 6,
+  "treasures": 2,
+  "levelsGained": 1,
+  "undead": false,
+  "bonusVs": [
+   {
+    "if": {
+     "class": "wizard"
+    },
+    "bonus": 6
+   }
+  ],
+  "runMod": 0,
+  "noPursueAtOrBelow": null,
+  "badStuff": [
+   {
+    "op": "choice",
+    "options": [
+     {
+      "label": "Discard your whole hand",
+      "then": [
+       {
+        "op": "discardHand"
+       }
+      ]
+     },
+     {
+      "label": "Lose 2 levels",
+      "then": [
+       {
+        "op": "loseLevels",
+        "n": 2
+       }
+      ]
+     }
+    ]
+   }
+  ],
+  "rules": {}
+ },
+ {
+  "id": "plutonium-dragon",
+  "name": "Plutonium Dragon",
+  "deck": "door",
+  "kind": "monster",
+  "copies": 1,
+  "text": "Monster L20. Won't pursue L5 or below. Bad: dead. 5 Tr, 2 levels.",
+  "level": 20,
+  "treasures": 5,
+  "levelsGained": 2,
+  "undead": false,
+  "bonusVs": [],
+  "runMod": 0,
+  "noPursueAtOrBelow": 5,
+  "badStuff": [
+   {
+    "op": "die"
+   }
+  ],
+  "rules": {}
+ },
+ {
+  "id": "potted-plant",
+  "name": "Potted Plant",
+  "deck": "door",
+  "kind": "monster",
+  "copies": 1,
+  "text": "Monster L1. Elves draw +1 Tr. Bad: none, auto-escape. 1 Tr.",
+  "level": 1,
+  "treasures": 1,
+  "levelsGained": 1,
+  "undead": false,
+  "bonusVs": [],
+  "runMod": 0,
+  "noPursueAtOrBelow": null,
+  "badStuff": [],
+  "rules": {
+   "autoEscape": true,
+   "elfBonusTreasures": 1
+  }
+ },
+ {
+  "id": "pukachu",
+  "name": "Pukachu",
+  "deck": "door",
+  "kind": "monster",
+  "copies": 1,
+  "text": "Monster L6. Gain a level if you escape. Bad: lose a level. 2 Tr.",
+  "level": 6,
+  "treasures": 2,
+  "levelsGained": 1,
+  "undead": false,
+  "bonusVs": [],
+  "runMod": 0,
+  "noPursueAtOrBelow": null,
+  "badStuff": [
+   {
+    "op": "loseLevels",
+    "n": 1
+   }
+  ],
+  "rules": {
+   "onEscape": [
+    {
+     "op": "gainLevels",
+     "n": 1
+    }
+   ]
+  }
+ },
+ {
+  "id": "shrieking-geek",
+  "name": "Shrieking Geek",
+  "deck": "door",
+  "kind": "monster",
+  "copies": 1,
+  "text": "Monster L6. +6 vs Warriors. Bad: lose race and class. 2 Tr.",
+  "level": 6,
+  "treasures": 2,
+  "levelsGained": 1,
+  "undead": false,
+  "bonusVs": [
+   {
+    "if": {
+     "class": "warrior"
+    },
+    "bonus": 6
+   }
+  ],
+  "runMod": 0,
+  "noPursueAtOrBelow": null,
+  "badStuff": [
+   {
+    "op": "loseRace"
+   },
+   {
+    "op": "loseClass"
+   }
+  ],
+  "rules": {}
+ },
+ {
+  "id": "snails-on-speed",
+  "name": "Snails on Speed",
+  "deck": "door",
+  "kind": "monster",
+  "copies": 1,
+  "text": "Monster L4. -2 to run. Bad: roll, lose that many items. 2 Tr.",
+  "level": 4,
+  "treasures": 2,
+  "levelsGained": 1,
+  "undead": false,
+  "bonusVs": [],
+  "runMod": -2,
+  "noPursueAtOrBelow": null,
+  "badStuff": [
+   {
+    "op": "rollThen",
+    "table": [
+     {
+      "min": 1,
+      "max": 6,
+      "then": [
+       {
+        "op": "loseItems",
+        "n": "roll"
+       }
+      ]
+     }
+    ]
+   }
+  ],
+  "rules": {}
+ },
+ {
+  "id": "squidzilla",
+  "name": "Squidzilla",
+  "deck": "door",
+  "kind": "monster",
+  "copies": 1,
+  "text": "Monster L18. +4 vs Elves. Won't pursue L4 or below (except Elves). Bad: dead. 4 Tr, 2 levels.",
+  "level": 18,
+  "treasures": 4,
+  "levelsGained": 2,
+  "undead": false,
+  "bonusVs": [
+   {
+    "if": {
+     "race": "elf"
+    },
+    "bonus": 4
+   }
+  ],
+  "runMod": 0,
+  "noPursueAtOrBelow": 4,
+  "noPursueExcept": {
+   "race": "elf"
+  },
+  "badStuff": [
+   {
+    "op": "die"
+   }
+  ],
+  "rules": {}
+ },
+ {
+  "id": "stoned-golem",
+  "name": "Stoned Golem",
+  "deck": "door",
+  "kind": "monster",
+  "copies": 1,
+  "text": "Monster L14. Non-Halflings may skip it (no Tr). Bad: dead. 4 Tr.",
+  "level": 14,
+  "treasures": 4,
+  "levelsGained": 1,
+  "undead": false,
+  "bonusVs": [],
+  "runMod": 0,
+  "noPursueAtOrBelow": null,
+  "badStuff": [
+   {
+    "op": "die"
+   }
+  ],
+  "rules": {
+   "avoid": {
+    "if": {
+     "notRace": "halfling"
+    },
+    "optional": true,
+    "treasures": 0
+   }
+  }
+ },
+ {
+  "id": "tongue-demon",
+  "name": "Tongue Demon",
+  "deck": "door",
+  "kind": "monster",
+  "copies": 1,
+  "text": "Monster L12. +4 vs Clerics. Discard an item before fighting. Bad: lose 2 levels (Elves 3). 3 Tr.",
+  "level": 12,
+  "treasures": 3,
+  "levelsGained": 1,
+  "undead": false,
+  "bonusVs": [
+   {
+    "if": {
+     "class": "cleric"
+    },
+    "bonus": 4
+   }
+  ],
+  "runMod": 0,
+  "noPursueAtOrBelow": null,
+  "badStuff": [
+   {
+    "op": "if",
+    "cond": {
+     "race": "elf"
+    },
+    "then": [
+     {
+      "op": "loseLevels",
+      "n": 3
+     }
+    ],
+    "else": [
+     {
+      "op": "loseLevels",
+      "n": 2
+     }
+    ]
+   }
+  ],
+  "rules": {
+   "onEnter": [
+    {
+     "op": "discardItem"
+    }
+   ]
+  }
+ },
+ {
+  "id": "undead-horse",
+  "name": "Undead Horse",
+  "deck": "door",
+  "kind": "monster",
+  "copies": 1,
+  "text": "Monster L4. Undead. +5 vs Dwarves. Bad: lose 2 levels. 2 Tr.",
+  "level": 4,
+  "treasures": 2,
+  "levelsGained": 1,
+  "undead": true,
+  "bonusVs": [
+   {
+    "if": {
+     "race": "dwarf"
+    },
+    "bonus": 5
+   }
+  ],
+  "runMod": 0,
+  "noPursueAtOrBelow": null,
+  "badStuff": [
+   {
+    "op": "loseLevels",
+    "n": 2
+   }
+  ],
+  "rules": {}
+ },
+ {
+  "id": "unspeakably-awful-indescribable-horror",
+  "name": "Unspeakably Awful Indescribable Horror",
+  "deck": "door",
+  "kind": "monster",
+  "copies": 1,
+  "text": "Monster L14. +4 vs Warriors. Bad: dead (Wizards lose class instead). 4 Tr.",
+  "level": 14,
+  "treasures": 4,
+  "levelsGained": 1,
+  "undead": false,
+  "bonusVs": [
+   {
+    "if": {
+     "class": "warrior"
+    },
+    "bonus": 4
+   }
+  ],
+  "runMod": 0,
+  "noPursueAtOrBelow": null,
+  "badStuff": [
+   {
+    "op": "if",
+    "cond": {
+     "class": "wizard"
+    },
+    "then": [
+     {
+      "op": "loseClass",
+      "which": "wizard"
+     }
+    ],
+    "else": [
+     {
+      "op": "die"
+     }
+    ]
+   }
+  ],
+  "rules": {}
+ },
+ {
+  "id": "wannabe-vampire",
+  "name": "Wannabe Vampire",
+  "deck": "door",
+  "kind": "monster",
+  "copies": 1,
+  "text": "Monster L12. Clerics may auto-chase it away and take 1 Tr. Bad: lose 3 levels. 4 Tr.",
+  "level": 12,
+  "treasures": 4,
+  "levelsGained": 1,
+  "undead": false,
+  "bonusVs": [],
+  "runMod": 0,
+  "noPursueAtOrBelow": null,
+  "badStuff": [
+   {
+    "op": "loseLevels",
+    "n": 3
+   }
+  ],
+  "rules": {
+   "avoid": {
+    "if": {
+     "class": "cleric"
+    },
+    "optional": true,
+    "treasures": 1
+   }
+  }
+ },
+ {
+  "id": "wight-brothers",
+  "name": "Wight Brothers",
+  "deck": "door",
+  "kind": "monster",
+  "copies": 1,
+  "text": "Monster L16. Undead. Won't pursue L3 or below. Bad: back to Level 1. 4 Tr, 2 levels.",
+  "level": 16,
+  "treasures": 4,
+  "levelsGained": 2,
+  "undead": true,
+  "bonusVs": [],
+  "runMod": 0,
+  "noPursueAtOrBelow": 3,
+  "badStuff": [
+   {
+    "op": "setLevel",
+    "to": 1
+   }
+  ],
+  "rules": {}
+ },
+ {
+  "id": "ancient",
+  "name": "Ancient",
+  "deck": "door",
+  "kind": "enhancer",
+  "copies": 1,
+  "text": "Enhancer: +10 to monster, +2 Tr.",
+  "monsterBonus": 10,
+  "treasureDelta": 2
+ },
+ {
+  "id": "baby",
+  "name": "Baby",
+  "deck": "door",
+  "kind": "enhancer",
+  "copies": 1,
+  "text": "Enhancer: -5 to monster, -1 Tr.",
+  "monsterBonus": -5,
+  "treasureDelta": -1
+ },
+ {
+  "id": "enraged",
+  "name": "Enraged",
+  "deck": "door",
+  "kind": "enhancer",
+  "copies": 2,
+  "text": "Enhancer: +5 to monster, +1 Tr.",
+  "monsterBonus": 5,
+  "treasureDelta": 1
+ },
+ {
+  "id": "humongous",
+  "name": "Humongous",
+  "deck": "door",
+  "kind": "enhancer",
+  "copies": 1,
+  "text": "Enhancer: +10 to monster, +2 Tr.",
+  "monsterBonus": 10,
+  "treasureDelta": 2
+ },
+ {
+  "id": "intelligent",
+  "name": "Intelligent",
+  "deck": "door",
+  "kind": "enhancer",
+  "copies": 1,
+  "text": "Enhancer: +5 to monster, +1 Tr.",
+  "monsterBonus": 5,
+  "treasureDelta": 1
+ },
+ {
+  "id": "curse-change-class",
+  "name": "Curse! Change Class",
+  "deck": "door",
+  "kind": "curse",
+  "copies": 1,
+  "text": "Curse: discard your class, take top class from the discard pile.",
+  "persistent": false,
+  "effect": {
+   "op": "changeClass"
+  }
+ },
+ {
+  "id": "curse-change-race",
+  "name": "Curse! Change Race",
+  "deck": "door",
+  "kind": "curse",
+  "copies": 1,
+  "text": "Curse: discard your race, take top race from the discard pile.",
+  "persistent": false,
+  "effect": {
+   "op": "changeRace"
+  }
+ },
+ {
+  "id": "curse-chicken-on-your-head",
+  "name": "Curse! Chicken on Your Head",
+  "deck": "door",
+  "kind": "curse",
+  "copies": 1,
+  "text": "Curse (stays on you): -1 to all die rolls.",
+  "persistent": true,
+  "duration": "untilRemoved",
+  "effect": {
+   "op": "none"
+  },
+  "rules": {
+   "dieRollMod": -1
+  }
+ },
+ {
+  "id": "curse-duck-of-doom",
+  "name": "Curse! Duck of Doom",
+  "deck": "door",
+  "kind": "curse",
+  "copies": 1,
+  "text": "Curse: lose 2 levels.",
+  "persistent": false,
+  "effect": {
+   "op": "loseLevels",
+   "n": 2
+  }
+ },
+ {
+  "id": "curse-income-tax",
+  "name": "Curse! Income Tax",
+  "deck": "door",
+  "kind": "curse",
+  "copies": 1,
+  "text": "Curse: discard an item; others discard items of equal value or lose a level.",
+  "persistent": false,
+  "effect": {
+   "op": "custom",
+   "handler": "incomeTax"
+  }
+ },
+ {
+  "id": "curse-lose-1-big-item",
+  "name": "Curse! Lose 1 Big Item",
+  "deck": "door",
+  "kind": "curse",
+  "copies": 1,
+  "text": "Curse: discard a Big item.",
+  "persistent": false,
+  "effect": {
+   "op": "loseItem",
+   "size": "big"
+  }
+ },
+ {
+  "id": "curse-lose-1-small-item",
+  "name": "Curse! Lose 1 Small Item",
+  "deck": "door",
+  "kind": "curse",
+  "copies": 2,
+  "text": "Curse: discard a small item.",
+  "persistent": false,
+  "effect": {
+   "op": "loseItem",
+   "size": "small"
+  }
+ },
+ {
+  "id": "curse-lose-a-level",
+  "name": "Curse! Lose a Level",
+  "deck": "door",
+  "kind": "curse",
+  "copies": 2,
+  "text": "Curse: lose a level.",
+  "persistent": false,
+  "effect": {
+   "op": "loseLevels",
+   "n": 1
+  }
+ },
+ {
+  "id": "curse-lose-your-armor",
+  "name": "Curse! Lose Your Armor",
+  "deck": "door",
+  "kind": "curse",
+  "copies": 1,
+  "text": "Curse: discard the armor you're wearing.",
+  "persistent": false,
+  "effect": {
+   "op": "loseSlot",
+   "slot": "armor"
+  }
+ },
+ {
+  "id": "curse-lose-your-class",
+  "name": "Curse! Lose Your Class",
+  "deck": "door",
+  "kind": "curse",
+  "copies": 1,
+  "text": "Curse: discard your class.",
+  "persistent": false,
+  "effect": {
+   "op": "loseClass"
+  }
+ },
+ {
+  "id": "curse-lose-your-footgear",
+  "name": "Curse! Lose Your Footgear",
+  "deck": "door",
+  "kind": "curse",
+  "copies": 1,
+  "text": "Curse: discard your footgear.",
+  "persistent": false,
+  "effect": {
+   "op": "loseSlot",
+   "slot": "foot"
+  }
+ },
+ {
+  "id": "curse-lose-your-headgear",
+  "name": "Curse! Lose Your Headgear",
+  "deck": "door",
+  "kind": "curse",
+  "copies": 1,
+  "text": "Curse: discard your headgear.",
+  "persistent": false,
+  "effect": {
+   "op": "loseSlot",
+   "slot": "head"
+  }
+ },
+ {
+  "id": "curse-lose-your-race",
+  "name": "Curse! Lose Your Race",
+  "deck": "door",
+  "kind": "curse",
+  "copies": 1,
+  "text": "Curse: discard your race; you're Human.",
+  "persistent": false,
+  "effect": {
+   "op": "loseRace"
+  }
+ },
+ {
+  "id": "curse-malign-mirror",
+  "name": "Curse! Malign Mirror",
+  "deck": "door",
+  "kind": "curse",
+  "copies": 1,
+  "text": "Curse: in your next combat only your level counts.",
+  "persistent": true,
+  "duration": "nextCombat",
+  "effect": {
+   "op": "none"
+  },
+  "rules": {
+   "levelOnly": true
+  }
+ },
+ {
+  "id": "curse-truly-obnoxious-curse",
+  "name": "Curse! Truly Obnoxious Curse",
+  "deck": "door",
+  "kind": "curse",
+  "copies": 1,
+  "text": "Curse: discard your best item.",
+  "persistent": false,
+  "effect": {
+   "op": "loseBestItem"
+  }
+ },
+ {
+  "id": "elf",
+  "name": "Elf",
+  "deck": "door",
+  "kind": "race",
+  "copies": 3,
+  "text": "Race: +1 to run. Gain a level for each monster you help kill.",
+  "race": "elf",
+  "powers": {
+   "runBonus": 1,
+   "onHelpKill": {
+    "levels": 1
+   }
+  }
+ },
+ {
+  "id": "dwarf",
+  "name": "Dwarf",
+  "deck": "door",
+  "kind": "race",
+  "copies": 3,
+  "text": "Race: any number of Big items; 6-card hand limit.",
+  "race": "dwarf",
+  "powers": {
+   "bigItemsUnlimited": true,
+   "handLimit": 6
+  }
+ },
+ {
+  "id": "halfling",
+  "name": "Halfling",
+  "deck": "door",
+  "kind": "race",
+  "copies": 3,
+  "text": "Race: sell 1 item/turn for double; discard to reroll a failed run once.",
+  "race": "halfling",
+  "powers": {
+   "sellDouble": true,
+   "rerollFailedRun": {
+    "cost": 1,
+    "perCombat": 1
+   }
+  }
+ },
+ {
+  "id": "cleric",
+  "name": "Cleric",
+  "deck": "door",
+  "kind": "class",
+  "copies": 3,
+  "text": "Class: Resurrection (take top discard instead of a face-up draw, discard 1 from hand each); Turning (+3 per discard vs Undead, max 3).",
+  "class": "cleric",
+  "powers": {
+   "resurrection": true,
+   "turning": {
+    "perDiscard": 3,
+    "max": 3,
+    "vs": "undead"
+   }
+  }
+ },
+ {
+  "id": "warrior",
+  "name": "Warrior",
+  "deck": "door",
+  "kind": "class",
+  "copies": 3,
+  "text": "Class: Berserking (+1 per discard in combat, max 3); win ties.",
+  "class": "warrior",
+  "powers": {
+   "berserking": {
+    "perDiscard": 1,
+    "max": 3
+   },
+   "winTies": true
+  }
+ },
+ {
+  "id": "wizard",
+  "name": "Wizard",
+  "deck": "door",
+  "kind": "class",
+  "copies": 3,
+  "text": "Class: Flight (+1 to run per discard, max 3); Charm (discard hand of 3+ to charm one monster: take its Tr, no level).",
+  "class": "wizard",
+  "powers": {
+   "flight": {
+    "perDiscard": 1,
+    "max": 3
+   },
+   "charm": {
+    "minHand": 3
+   }
+  }
+ },
+ {
+  "id": "thief",
+  "name": "Thief",
+  "deck": "door",
+  "kind": "class",
+  "copies": 3,
+  "text": "Class: Backstab (discard 1: -2 to a player in combat, once per victim per combat); Theft (discard 1, roll 4+ to steal a small carried item, else lose a level).",
+  "class": "thief",
+  "powers": {
+   "backstab": {
+    "cost": 1,
+    "penalty": 2
+   },
+   "theft": {
+    "cost": 1,
+    "need": 4
+   }
+  }
+ },
+ {
+  "id": "half-breed",
+  "name": "Half-Breed",
+  "deck": "door",
+  "kind": "other",
+  "copies": 2,
+  "text": "Have two races.",
+  "usable": "ownTurn",
+  "effect": {
+   "op": "custom",
+   "handler": "halfBreed"
+  }
+ },
+ {
+  "id": "super-munchkin",
+  "name": "Super Munchkin",
+  "deck": "door",
+  "kind": "other",
+  "copies": 2,
+  "text": "Have two classes.",
+  "usable": "ownTurn",
+  "effect": {
+   "op": "custom",
+   "handler": "superMunchkin"
+  }
+ },
+ {
+  "id": "wandering-monster",
+  "name": "Wandering Monster",
+  "deck": "door",
+  "kind": "other",
+  "copies": 3,
+  "text": "Play with a monster from your hand to add it to any combat.",
+  "usable": "combat",
+  "effect": {
+   "op": "custom",
+   "handler": "wanderingMonster"
+  }
+ },
+ {
+  "id": "cheat",
+  "name": "Cheat!",
+  "deck": "door",
+  "kind": "other",
+  "copies": 1,
+  "text": "Equip one item you normally couldn't.",
+  "usable": "ownTurn",
+  "effect": {
+   "op": "custom",
+   "handler": "cheat"
+  }
+ },
+ {
+  "id": "divine-intervention",
+  "name": "Divine Intervention",
+  "deck": "door",
+  "kind": "other",
+  "copies": 1,
+  "text": "Every Cleric goes up a level immediately.",
+  "usable": "anytime",
+  "effect": {
+   "op": "custom",
+   "handler": "divineIntervention"
+  }
+ },
+ {
+  "id": "help-me-out-here",
+  "name": "Help Me Out Here!",
+  "deck": "door",
+  "kind": "other",
+  "copies": 1,
+  "text": "In your combat, take one item from another player for this combat.",
+  "usable": "ownCombat",
+  "effect": {
+   "op": "custom",
+   "handler": "helpMeOutHere"
+  }
+ },
+ {
+  "id": "illusion",
+  "name": "Illusion",
+  "deck": "door",
+  "kind": "other",
+  "copies": 1,
+  "text": "Replace a monster in combat with one from your hand.",
+  "usable": "combat",
+  "effect": {
+   "op": "custom",
+   "handler": "illusion"
+  }
+ },
+ {
+  "id": "mate",
+  "name": "Mate",
+  "deck": "door",
+  "kind": "other",
+  "copies": 1,
+  "text": "Duplicate a monster in combat (doubles its level AND levels/treasure if beaten).",
+  "usable": "combat",
+  "effect": {
+   "op": "custom",
+   "handler": "mate"
+  }
+ },
+ {
+  "id": "out-to-lunch",
+  "name": "Out to Lunch",
+  "deck": "door",
+  "kind": "other",
+  "copies": 1,
+  "text": "Monster leaves; the fighter takes 2 Tr, no level.",
+  "usable": "combat",
+  "effect": {
+   "op": "custom",
+   "handler": "outToLunch"
+  }
+ },
+ {
+  "id": "bad-ass-bandana",
+  "name": "Bad-Ass Bandana",
+  "deck": "treasure",
+  "kind": "item",
+  "copies": 1,
+  "text": "Headgear. +3, Humans only. 400g.",
+  "slot": "head",
+  "hands": 0,
+  "big": false,
+  "bonus": 3,
+  "gold": 400,
+  "requires": {
+   "race": "human"
+  },
+  "forbids": null,
+  "fire": false
+ },
+ {
+  "id": "boots-of-butt-kicking",
+  "name": "Boots of Butt-Kicking",
+  "deck": "treasure",
+  "kind": "item",
+  "copies": 1,
+  "text": "Footgear. +2. 400g.",
+  "slot": "foot",
+  "hands": 0,
+  "big": false,
+  "bonus": 2,
+  "gold": 400,
+  "requires": null,
+  "forbids": null,
+  "fire": false
+ },
+ {
+  "id": "boots-of-running-really-fast",
+  "name": "Boots of Running Really Fast",
+  "deck": "treasure",
+  "kind": "item",
+  "copies": 1,
+  "text": "Footgear. +2 to run. 400g.",
+  "slot": "foot",
+  "hands": 0,
+  "big": false,
+  "bonus": 0,
+  "gold": 400,
+  "requires": null,
+  "forbids": null,
+  "fire": false,
+  "runBonus": 2
+ },
+ {
+  "id": "bow-with-ribbons",
+  "name": "Bow with Ribbons",
+  "deck": "treasure",
+  "kind": "item",
+  "copies": 1,
+  "text": "2 Hands. +4, Elves only. 800g.",
+  "slot": "hands",
+  "hands": 2,
+  "big": false,
+  "bonus": 4,
+  "gold": 800,
+  "requires": {
+   "race": "elf"
+  },
+  "forbids": null,
+  "fire": false
+ },
+ {
+  "id": "broad-sword",
+  "name": "Broad Sword",
+  "deck": "treasure",
+  "kind": "item",
+  "copies": 1,
+  "text": "1 Hand. +3, not for female characters. 400g.",
+  "slot": "hands",
+  "hands": 1,
+  "big": false,
+  "bonus": 3,
+  "gold": 400,
+  "requires": null,
+  "forbids": {
+   "gender": "female"
+  },
+  "fire": false
+ },
+ {
+  "id": "buckler-of-swashing",
+  "name": "Buckler of Swashing",
+  "deck": "treasure",
+  "kind": "item",
+  "copies": 1,
+  "text": "1 Hand. +2. 400g.",
+  "slot": "hands",
+  "hands": 1,
+  "big": false,
+  "bonus": 2,
+  "gold": 400,
+  "requires": null,
+  "forbids": null,
+  "fire": false
+ },
+ {
+  "id": "chainsaw-of-bloody-dismemberment",
+  "name": "Chainsaw of Bloody Dismemberment",
+  "deck": "treasure",
+  "kind": "item",
+  "copies": 1,
+  "text": "2 Hands, Big. +3. 600g.",
+  "slot": "hands",
+  "hands": 2,
+  "big": true,
+  "bonus": 3,
+  "gold": 600,
+  "requires": null,
+  "forbids": null,
+  "fire": false
+ },
+ {
+  "id": "cheese-grater-of-peace",
+  "name": "Cheese Grater of Peace",
+  "deck": "treasure",
+  "kind": "item",
+  "copies": 1,
+  "text": "1 Hand. +3, Clerics only. 400g.",
+  "slot": "hands",
+  "hands": 1,
+  "big": false,
+  "bonus": 3,
+  "gold": 400,
+  "requires": {
+   "class": "cleric"
+  },
+  "forbids": null,
+  "fire": false
+ },
+ {
+  "id": "cloak-of-obscurity",
+  "name": "Cloak of Obscurity",
+  "deck": "treasure",
+  "kind": "item",
+  "copies": 1,
+  "text": "No slot. +4, Thieves only. 600g.",
+  "slot": "none",
+  "hands": 0,
+  "big": false,
+  "bonus": 4,
+  "gold": 600,
+  "requires": {
+   "class": "thief"
+  },
+  "forbids": null,
+  "fire": false
+ },
+ {
+  "id": "dagger-of-treachery",
+  "name": "Dagger of Treachery",
+  "deck": "treasure",
+  "kind": "item",
+  "copies": 1,
+  "text": "1 Hand. +3, Thieves only. 400g.",
+  "slot": "hands",
+  "hands": 1,
+  "big": false,
+  "bonus": 3,
+  "gold": 400,
+  "requires": {
+   "class": "thief"
+  },
+  "forbids": null,
+  "fire": false
+ },
+ {
+  "id": "eleven-foot-pole",
+  "name": "Eleven-Foot Pole",
+  "deck": "treasure",
+  "kind": "item",
+  "copies": 1,
+  "text": "2 Hands. +1. 200g.",
+  "slot": "hands",
+  "hands": 2,
+  "big": false,
+  "bonus": 1,
+  "gold": 200,
+  "requires": null,
+  "forbids": null,
+  "fire": false
+ },
+ {
+  "id": "flaming-armor",
+  "name": "Flaming Armor",
+  "deck": "treasure",
+  "kind": "item",
+  "copies": 1,
+  "text": "Armor. +2, fire attack. 400g.",
+  "slot": "armor",
+  "hands": 0,
+  "big": false,
+  "bonus": 2,
+  "gold": 400,
+  "requires": null,
+  "forbids": null,
+  "fire": true
+ },
+ {
+  "id": "gentlemen-s-club",
+  "name": "Gentlemen's Club",
+  "deck": "treasure",
+  "kind": "item",
+  "copies": 1,
+  "text": "1 Hand. +3, male characters only. 400g.",
+  "slot": "hands",
+  "hands": 1,
+  "big": false,
+  "bonus": 3,
+  "gold": 400,
+  "requires": {
+   "gender": "male"
+  },
+  "forbids": null,
+  "fire": false
+ },
+ {
+  "id": "hammer-of-kneecapping",
+  "name": "Hammer of Kneecapping",
+  "deck": "treasure",
+  "kind": "item",
+  "copies": 1,
+  "text": "1 Hand. +4, Dwarves only. 600g.",
+  "slot": "hands",
+  "hands": 1,
+  "big": false,
+  "bonus": 4,
+  "gold": 600,
+  "requires": {
+   "race": "dwarf"
+  },
+  "forbids": null,
+  "fire": false
+ },
+ {
+  "id": "helm-of-courage",
+  "name": "Helm of Courage",
+  "deck": "treasure",
+  "kind": "item",
+  "copies": 1,
+  "text": "Headgear. +1. 200g.",
+  "slot": "head",
+  "hands": 0,
+  "big": false,
+  "bonus": 1,
+  "gold": 200,
+  "requires": null,
+  "forbids": null,
+  "fire": false
+ },
+ {
+  "id": "horny-helmet",
+  "name": "Horny Helmet",
+  "deck": "treasure",
+  "kind": "item",
+  "copies": 1,
+  "text": "Headgear. +1 (+3 for Elves). 600g.",
+  "slot": "head",
+  "hands": 0,
+  "big": false,
+  "bonus": 1,
+  "gold": 600,
+  "requires": null,
+  "forbids": null,
+  "fire": false,
+  "bonusIf": {
+   "if": {
+    "race": "elf"
+   },
+   "bonus": 3
+  }
+ },
+ {
+  "id": "huge-rock",
+  "name": "Huge Rock",
+  "deck": "treasure",
+  "kind": "item",
+  "copies": 1,
+  "text": "2 Hands, Big. +3. No value.",
+  "slot": "hands",
+  "hands": 2,
+  "big": true,
+  "bonus": 3,
+  "gold": 0,
+  "requires": null,
+  "forbids": null,
+  "fire": false
+ },
+ {
+  "id": "kneepads-of-allure",
+  "name": "Kneepads of Allure",
+  "deck": "treasure",
+  "kind": "item",
+  "copies": 1,
+  "text": "No slot. Not for Clerics. Lower-level players must help when asked. 600g.",
+  "slot": "none",
+  "hands": 0,
+  "big": false,
+  "bonus": 0,
+  "gold": 600,
+  "requires": null,
+  "forbids": {
+   "class": "cleric"
+  },
+  "fire": false,
+  "ability": "kneepads",
+  "belowWaist": true
+ },
+ {
+  "id": "leather-armor",
+  "name": "Leather Armor",
+  "deck": "treasure",
+  "kind": "item",
+  "copies": 1,
+  "text": "Armor. +1. 200g.",
+  "slot": "armor",
+  "hands": 0,
+  "big": false,
+  "bonus": 1,
+  "gold": 200,
+  "requires": null,
+  "forbids": null,
+  "fire": false
+ },
+ {
+  "id": "limburger-and-anchovy-sandwich",
+  "name": "Limburger and Anchovy Sandwich",
+  "deck": "treasure",
+  "kind": "item",
+  "copies": 1,
+  "text": "No slot. +3, Halflings only. 400g.",
+  "slot": "none",
+  "hands": 0,
+  "big": false,
+  "bonus": 3,
+  "gold": 400,
+  "requires": {
+   "race": "halfling"
+  },
+  "forbids": null,
+  "fire": false
+ },
+ {
+  "id": "mace-of-sharpness",
+  "name": "Mace of Sharpness",
+  "deck": "treasure",
+  "kind": "item",
+  "copies": 1,
+  "text": "1 Hand. +4, Clerics only. 600g.",
+  "slot": "hands",
+  "hands": 1,
+  "big": false,
+  "bonus": 4,
+  "gold": 600,
+  "requires": {
+   "class": "cleric"
+  },
+  "forbids": null,
+  "fire": false
+ },
+ {
+  "id": "mithril-armor",
+  "name": "Mithril Armor",
+  "deck": "treasure",
+  "kind": "item",
+  "copies": 1,
+  "text": "Armor, Big. +3, not for Wizards. 600g.",
+  "slot": "armor",
+  "hands": 0,
+  "big": true,
+  "bonus": 3,
+  "gold": 600,
+  "requires": null,
+  "forbids": {
+   "class": "wizard"
+  },
+  "fire": false
+ },
+ {
+  "id": "pantyhose-of-giant-strength",
+  "name": "Pantyhose of Giant Strength",
+  "deck": "treasure",
+  "kind": "item",
+  "copies": 1,
+  "text": "No slot. +3, not for Warriors. 600g.",
+  "slot": "none",
+  "hands": 0,
+  "big": false,
+  "bonus": 3,
+  "gold": 600,
+  "requires": null,
+  "forbids": {
+   "class": "warrior"
+  },
+  "fire": false,
+  "belowWaist": true
+ },
+ {
+  "id": "pointy-hat-of-power",
+  "name": "Pointy Hat of Power",
+  "deck": "treasure",
+  "kind": "item",
+  "copies": 1,
+  "text": "Headgear. +3, Wizards only. 400g.",
+  "slot": "head",
+  "hands": 0,
+  "big": false,
+  "bonus": 3,
+  "gold": 400,
+  "requires": {
+   "class": "wizard"
+  },
+  "forbids": null,
+  "fire": false
+ },
+ {
+  "id": "rapier-of-unfairness",
+  "name": "Rapier of Unfairness",
+  "deck": "treasure",
+  "kind": "item",
+  "copies": 1,
+  "text": "1 Hand. +3, Elves only. 600g.",
+  "slot": "hands",
+  "hands": 1,
+  "big": false,
+  "bonus": 3,
+  "gold": 600,
+  "requires": {
+   "race": "elf"
+  },
+  "forbids": null,
+  "fire": false
+ },
+ {
+  "id": "rat-on-a-stick",
+  "name": "Rat on a Stick",
+  "deck": "treasure",
+  "kind": "item",
+  "copies": 1,
+  "text": "1 Hand. +1. Discard to auto-escape a L8-or-lower monster. No value.",
+  "slot": "hands",
+  "hands": 1,
+  "big": false,
+  "bonus": 1,
+  "gold": 0,
+  "requires": null,
+  "forbids": null,
+  "fire": false,
+  "ability": "ratOnAStick"
+ },
+ {
+  "id": "really-impressive-title",
+  "name": "Really Impressive Title",
+  "deck": "treasure",
+  "kind": "item",
+  "copies": 1,
+  "text": "No slot. +3. No value.",
+  "slot": "none",
+  "hands": 0,
+  "big": false,
+  "bonus": 3,
+  "gold": 0,
+  "requires": null,
+  "forbids": null,
+  "fire": false
+ },
+ {
+  "id": "sandals-of-protection",
+  "name": "Sandals of Protection",
+  "deck": "treasure",
+  "kind": "item",
+  "copies": 1,
+  "text": "Footgear. Worn: Curses drawn from the door don't affect you. 700g.",
+  "slot": "foot",
+  "hands": 0,
+  "big": false,
+  "bonus": 0,
+  "gold": 700,
+  "requires": null,
+  "forbids": null,
+  "fire": false,
+  "ability": "sandals"
+ },
+ {
+  "id": "shield-of-ubiquity",
+  "name": "Shield of Ubiquity",
+  "deck": "treasure",
+  "kind": "item",
+  "copies": 1,
+  "text": "1 Hand, Big. +4, Warriors only. 600g.",
+  "slot": "hands",
+  "hands": 1,
+  "big": true,
+  "bonus": 4,
+  "gold": 600,
+  "requires": {
+   "class": "warrior"
+  },
+  "forbids": null,
+  "fire": false
+ },
+ {
+  "id": "short-wide-armor",
+  "name": "Short Wide Armor",
+  "deck": "treasure",
+  "kind": "item",
+  "copies": 1,
+  "text": "Armor. +3, Dwarves only. 400g.",
+  "slot": "armor",
+  "hands": 0,
+  "big": false,
+  "bonus": 3,
+  "gold": 400,
+  "requires": {
+   "race": "dwarf"
+  },
+  "forbids": null,
+  "fire": false
+ },
+ {
+  "id": "singing-and-dancing-sword",
+  "name": "Singing & Dancing Sword",
+  "deck": "treasure",
+  "kind": "item",
+  "copies": 1,
+  "text": "No hands. +2, not for Thieves. 400g.",
+  "slot": "none",
+  "hands": 0,
+  "big": false,
+  "bonus": 2,
+  "gold": 400,
+  "requires": null,
+  "forbids": {
+   "class": "thief"
+  },
+  "fire": false
+ },
+ {
+  "id": "slimy-armor",
+  "name": "Slimy Armor",
+  "deck": "treasure",
+  "kind": "item",
+  "copies": 1,
+  "text": "Armor. +1. 200g.",
+  "slot": "armor",
+  "hands": 0,
+  "big": false,
+  "bonus": 1,
+  "gold": 200,
+  "requires": null,
+  "forbids": null,
+  "fire": false
+ },
+ {
+  "id": "sneaky-bastard-sword",
+  "name": "Sneaky Bastard Sword",
+  "deck": "treasure",
+  "kind": "item",
+  "copies": 1,
+  "text": "1 Hand. +2. 400g.",
+  "slot": "hands",
+  "hands": 1,
+  "big": false,
+  "bonus": 2,
+  "gold": 400,
+  "requires": null,
+  "forbids": null,
+  "fire": false
+ },
+ {
+  "id": "spiky-knees",
+  "name": "Spiky Knees",
+  "deck": "treasure",
+  "kind": "item",
+  "copies": 1,
+  "text": "No slot. +1. 200g.",
+  "slot": "none",
+  "hands": 0,
+  "big": false,
+  "bonus": 1,
+  "gold": 200,
+  "requires": null,
+  "forbids": null,
+  "fire": false,
+  "belowWaist": true
+ },
+ {
+  "id": "staff-of-napalm",
+  "name": "Staff of Napalm",
+  "deck": "treasure",
+  "kind": "item",
+  "copies": 1,
+  "text": "1 Hand. +5, Wizards only, fire. 800g.",
+  "slot": "hands",
+  "hands": 1,
+  "big": false,
+  "bonus": 5,
+  "gold": 800,
+  "requires": {
+   "class": "wizard"
+  },
+  "forbids": null,
+  "fire": true
+ },
+ {
+  "id": "stepladder",
+  "name": "Stepladder",
+  "deck": "treasure",
+  "kind": "item",
+  "copies": 1,
+  "text": "Big, no slot. +3, Halflings only. 400g.",
+  "slot": "none",
+  "hands": 0,
+  "big": true,
+  "bonus": 3,
+  "gold": 400,
+  "requires": {
+   "race": "halfling"
+  },
+  "forbids": null,
+  "fire": false
+ },
+ {
+  "id": "swiss-army-polearm",
+  "name": "Swiss Army Polearm",
+  "deck": "treasure",
+  "kind": "item",
+  "copies": 1,
+  "text": "2 Hands, Big. +4, Humans only. 600g.",
+  "slot": "hands",
+  "hands": 2,
+  "big": true,
+  "bonus": 4,
+  "gold": 600,
+  "requires": {
+   "race": "human"
+  },
+  "forbids": null,
+  "fire": false
+ },
+ {
+  "id": "tuba-of-charm",
+  "name": "Tuba of Charm",
+  "deck": "treasure",
+  "kind": "item",
+  "copies": 1,
+  "text": "1 Hand, Big. Auto-escape on a 3+. 300g.",
+  "slot": "hands",
+  "hands": 1,
+  "big": true,
+  "bonus": 0,
+  "gold": 300,
+  "requires": null,
+  "forbids": null,
+  "fire": false,
+  "ability": "tuba"
+ },
+ {
+  "id": "cotion-of-ponfusion",
+  "name": "Cotion of Ponfusion",
+  "deck": "treasure",
+  "kind": "oneShot",
+  "copies": 1,
+  "text": "One-shot: +3 to either side. 100g.",
+  "bonus": 3,
+  "side": "either",
+  "usable": "combat",
+  "fire": false,
+  "gold": 100,
+  "effect": {
+   "op": "bonus"
+  }
+ },
+ {
+  "id": "doppleganger",
+  "name": "Doppleganger",
+  "deck": "treasure",
+  "kind": "oneShot",
+  "copies": 1,
+  "text": "One-shot: in your combat, double your strength. 300g.",
+  "bonus": 0,
+  "side": null,
+  "usable": "ownCombat",
+  "fire": false,
+  "gold": 300,
+  "effect": {
+   "op": "custom",
+   "handler": "doppleganger"
+  }
+ },
+ {
+  "id": "electric-radioactive-acid-potion",
+  "name": "Electric Radioactive Acid Potion",
+  "deck": "treasure",
+  "kind": "oneShot",
+  "copies": 1,
+  "text": "One-shot: +5 to either side. 200g.",
+  "bonus": 5,
+  "side": "either",
+  "usable": "combat",
+  "fire": false,
+  "gold": 200,
+  "effect": {
+   "op": "bonus"
+  }
+ },
+ {
+  "id": "flask-of-glue",
+  "name": "Flask of Glue",
+  "deck": "treasure",
+  "kind": "oneShot",
+  "copies": 1,
+  "text": "One-shot: someone who escaped must roll again. 100g.",
+  "bonus": 0,
+  "side": null,
+  "usable": "afterEscape",
+  "fire": false,
+  "gold": 100,
+  "effect": {
+   "op": "custom",
+   "handler": "flaskOfGlue"
+  }
+ },
+ {
+  "id": "flaming-poison-potion",
+  "name": "Flaming Poison Potion",
+  "deck": "treasure",
+  "kind": "oneShot",
+  "copies": 1,
+  "text": "One-shot: +3 to either side, fire. 100g.",
+  "bonus": 3,
+  "side": "either",
+  "usable": "combat",
+  "fire": true,
+  "gold": 100,
+  "effect": {
+   "op": "bonus"
+  }
+ },
+ {
+  "id": "freezing-explosive-potion",
+  "name": "Freezing Explosive Potion",
+  "deck": "treasure",
+  "kind": "oneShot",
+  "copies": 1,
+  "text": "One-shot: +3 to either side. 100g.",
+  "bonus": 3,
+  "side": "either",
+  "usable": "combat",
+  "fire": false,
+  "gold": 100,
+  "effect": {
+   "op": "bonus"
+  }
+ },
+ {
+  "id": "friendship-potion",
+  "name": "Friendship Potion",
+  "deck": "treasure",
+  "kind": "oneShot",
+  "copies": 1,
+  "text": "One-shot: discard all monsters in a combat; no treasure, no level. 200g.",
+  "bonus": 0,
+  "side": null,
+  "usable": "combat",
+  "fire": false,
+  "gold": 200,
+  "effect": {
+   "op": "custom",
+   "handler": "friendshipPotion"
+  }
+ },
+ {
+  "id": "instant-wall",
+  "name": "Instant Wall",
+  "deck": "treasure",
+  "kind": "oneShot",
+  "copies": 1,
+  "text": "One-shot: up to 2 players auto-escape. 300g.",
+  "bonus": 0,
+  "side": null,
+  "usable": "combat",
+  "fire": false,
+  "gold": 300,
+  "effect": {
+   "op": "custom",
+   "handler": "instantWall"
+  }
+ },
+ {
+  "id": "invisibility-potion",
+  "name": "Invisibility Potion",
+  "deck": "treasure",
+  "kind": "oneShot",
+  "copies": 1,
+  "text": "One-shot: auto-escape after a failed run. 200g.",
+  "bonus": 0,
+  "side": null,
+  "usable": "afterFailedRun",
+  "fire": false,
+  "gold": 200,
+  "effect": {
+   "op": "custom",
+   "handler": "invisibility"
+  }
+ },
+ {
+  "id": "loaded-die",
+  "name": "Loaded Die",
+  "deck": "treasure",
+  "kind": "oneShot",
+  "copies": 1,
+  "text": "One-shot: set any one die roll. 300g.",
+  "bonus": 0,
+  "side": null,
+  "usable": "afterRoll",
+  "fire": false,
+  "gold": 300,
+  "effect": {
+   "op": "custom",
+   "handler": "loadedDie"
+  }
+ },
+ {
+  "id": "magic-lamp",
+  "name": "Magic Lamp",
+  "deck": "treasure",
+  "kind": "oneShot",
+  "copies": 1,
+  "text": "One-shot, your turn only: monster vanishes, you take its Tr. 500g.",
+  "bonus": 0,
+  "side": null,
+  "usable": "ownTurnCombat",
+  "fire": false,
+  "gold": 500,
+  "effect": {
+   "op": "custom",
+   "handler": "magicLamp"
+  }
+ },
+ {
+  "id": "magic-missile",
+  "name": "Magic Missile",
+  "deck": "treasure",
+  "kind": "oneShot",
+  "copies": 1,
+  "text": "One-shot: +5 to either side. 300g.",
+  "bonus": 5,
+  "side": "either",
+  "usable": "combat",
+  "fire": false,
+  "gold": 300,
+  "effect": {
+   "op": "bonus"
+  }
+ },
+ {
+  "id": "nasty-tasting-sports-drink",
+  "name": "Nasty-Tasting Sports Drink",
+  "deck": "treasure",
+  "kind": "oneShot",
+  "copies": 1,
+  "text": "One-shot: +2 to either side. 200g.",
+  "bonus": 2,
+  "side": "either",
+  "usable": "combat",
+  "fire": false,
+  "gold": 200,
+  "effect": {
+   "op": "bonus"
+  }
+ },
+ {
+  "id": "pollymorph-potion",
+  "name": "Pollymorph Potion",
+  "deck": "treasure",
+  "kind": "oneShot",
+  "copies": 1,
+  "text": "One-shot: monster becomes a parrot and leaves; you take its Tr, no level. 1,300g.",
+  "bonus": 0,
+  "side": null,
+  "usable": "combat",
+  "fire": false,
+  "gold": 1300,
+  "effect": {
+   "op": "custom",
+   "handler": "pollymorph"
+  }
+ },
+ {
+  "id": "potion-of-halitosis",
+  "name": "Potion of Halitosis",
+  "deck": "treasure",
+  "kind": "oneShot",
+  "copies": 1,
+  "text": "One-shot: +2 to either side. 100g.",
+  "bonus": 2,
+  "side": "either",
+  "usable": "combat",
+  "fire": false,
+  "gold": 100,
+  "effect": {
+   "op": "bonus"
+  }
+ },
+ {
+  "id": "potion-of-idiotic-bravery",
+  "name": "Potion of Idiotic Bravery",
+  "deck": "treasure",
+  "kind": "oneShot",
+  "copies": 1,
+  "text": "One-shot: +2 to either side. 100g.",
+  "bonus": 2,
+  "side": "either",
+  "usable": "combat",
+  "fire": false,
+  "gold": 100,
+  "effect": {
+   "op": "bonus"
+  }
+ },
+ {
+  "id": "pretty-balloons",
+  "name": "Pretty Balloons",
+  "deck": "treasure",
+  "kind": "oneShot",
+  "copies": 1,
+  "text": "One-shot: +5 to your side. No value.",
+  "bonus": 5,
+  "side": "own",
+  "usable": "combat",
+  "fire": false,
+  "gold": 0,
+  "effect": {
+   "op": "bonus"
+  }
+ },
+ {
+  "id": "sleep-potion",
+  "name": "Sleep Potion",
+  "deck": "treasure",
+  "kind": "oneShot",
+  "copies": 1,
+  "text": "One-shot: +2 to either side. 100g.",
+  "bonus": 2,
+  "side": "either",
+  "usable": "combat",
+  "fire": false,
+  "gold": 100,
+  "effect": {
+   "op": "bonus"
+  }
+ },
+ {
+  "id": "transferral-potion",
+  "name": "Transferral Potion",
+  "deck": "treasure",
+  "kind": "oneShot",
+  "copies": 1,
+  "text": "One-shot: move the combat to another player. 300g.",
+  "bonus": 0,
+  "side": null,
+  "usable": "combat",
+  "fire": false,
+  "gold": 300,
+  "effect": {
+   "op": "custom",
+   "handler": "transferral"
+  }
+ },
+ {
+  "id": "wishing-ring",
+  "name": "Wishing Ring",
+  "deck": "treasure",
+  "kind": "oneShot",
+  "copies": 2,
+  "text": "One-shot: cancel any Curse. 500g.",
+  "bonus": 0,
+  "side": null,
+  "usable": "anytime",
+  "fire": false,
+  "gold": 500,
+  "effect": {
+   "op": "custom",
+   "handler": "wishingRing"
+  }
+ },
+ {
+  "id": "yuppie-water",
+  "name": "Yuppie Water",
+  "deck": "treasure",
+  "kind": "oneShot",
+  "copies": 1,
+  "text": "One-shot: +2 to every Elf in the combat. 100g.",
+  "bonus": 0,
+  "side": null,
+  "usable": "combat",
+  "fire": false,
+  "gold": 100,
+  "effect": {
+   "op": "custom",
+   "handler": "yuppieWater"
+  }
+ },
+ {
+  "id": "hoard",
+  "name": "Hoard!",
+  "deck": "treasure",
+  "kind": "other",
+  "copies": 1,
+  "text": "Draw 3 Treasures face-down (face-up if dead).",
+  "usable": "anytime",
+  "gold": 0,
+  "effect": {
+   "op": "custom",
+   "handler": "hoard"
+  }
+ },
+ {
+  "id": "1-000-gold-pieces",
+  "name": "1,000 Gold Pieces",
+  "deck": "treasure",
+  "kind": "other",
+  "copies": 1,
+  "text": "Go Up a Level (never to 10).",
+  "usable": "anytime",
+  "gold": 0,
+  "effect": {
+   "op": "goUpLevel"
+  }
+ },
+ {
+  "id": "boil-an-anthill",
+  "name": "Boil an Anthill",
+  "deck": "treasure",
+  "kind": "other",
+  "copies": 1,
+  "text": "Go Up a Level (never to 10).",
+  "usable": "anytime",
+  "gold": 0,
+  "effect": {
+   "op": "goUpLevel"
+  }
+ },
+ {
+  "id": "bribe-gm-with-food",
+  "name": "Bribe GM With Food",
+  "deck": "treasure",
+  "kind": "other",
+  "copies": 1,
+  "text": "Go Up a Level (never to 10).",
+  "usable": "anytime",
+  "gold": 0,
+  "effect": {
+   "op": "goUpLevel"
+  }
+ },
+ {
+  "id": "convenient-addition-error",
+  "name": "Convenient Addition Error",
+  "deck": "treasure",
+  "kind": "other",
+  "copies": 1,
+  "text": "Go Up a Level (never to 10).",
+  "usable": "anytime",
+  "gold": 0,
+  "effect": {
+   "op": "goUpLevel"
+  }
+ },
+ {
+  "id": "invoke-obscure-rules",
+  "name": "Invoke Obscure Rules",
+  "deck": "treasure",
+  "kind": "other",
+  "copies": 1,
+  "text": "Go Up a Level (never to 10).",
+  "usable": "anytime",
+  "gold": 0,
+  "effect": {
+   "op": "goUpLevel"
+  }
+ },
+ {
+  "id": "mutilate-the-bodies",
+  "name": "Mutilate the Bodies",
+  "deck": "treasure",
+  "kind": "other",
+  "copies": 1,
+  "text": "Go Up a Level (never to 10).",
+  "usable": "anytime",
+  "gold": 0,
+  "effect": {
+   "op": "goUpLevel"
+  }
+ },
+ {
+  "id": "potion-of-general-studliness",
+  "name": "Potion of General Studliness",
+  "deck": "treasure",
+  "kind": "other",
+  "copies": 1,
+  "text": "Go Up a Level (never to 10).",
+  "usable": "anytime",
+  "gold": 0,
+  "effect": {
+   "op": "goUpLevel"
+  }
+ },
+ {
+  "id": "whine-at-the-gm",
+  "name": "Whine at the GM",
+  "deck": "treasure",
+  "kind": "other",
+  "copies": 1,
+  "text": "Go Up a Level (never to 10). Not if you're the leader.",
+  "usable": "anytime",
+  "gold": 0,
+  "effect": {
+   "op": "goUpLevel",
+   "notIfLeader": true
+  }
+ }
+]
