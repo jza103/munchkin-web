@@ -134,3 +134,75 @@ describe('end-of-game recap and sound', () => {
     expect(soundFor([ev('note')])).toBeNull();
   });
 });
+
+import { GmError, runClaudeAi, runOpenRouter } from '../src/gm/providers';
+import { DEFAULT_GM, resolveProvider } from '../src/ui/gm';
+
+describe('GM providers', () => {
+  const call = (kind: 'narration' | 'answer' = 'narration') => {
+    const seen: string[] = [];
+    return { seen, c: { system: 'SYS', user: 'USER', kind, onText: (t: string) => seen.push(t) } };
+  };
+
+  it('OpenRouter: streams SSE deltas, sends the system prompt cached and low reasoning effort', async () => {
+    let sent: { url: string; init: RequestInit } | null = null;
+    const body = [
+      ': OPENROUTER PROCESSING\n\n',
+      'data: {"choices":[{"delta":{"content":"🚪 The door"}}]}\n\n',
+      'data: {"choices":[{"delta":{"content":" creaks."},"finish_reason":"stop"}]}\n\ndata: [DONE]\n\n',
+    ];
+    const fetchImpl = (async (url: string, init: RequestInit) => {
+      sent = { url, init };
+      return new Response(new ReadableStream({ start(c) { for (const b of body) c.enqueue(new TextEncoder().encode(b)); c.close(); } }), { status: 200 });
+    }) as unknown as typeof fetch;
+    const { seen, c } = call();
+    const r = await runOpenRouter('sk-or-x', 'anthropic/claude-haiku-5.5', c, fetchImpl);
+    expect(r).toEqual({ text: '🚪 The door creaks.', refused: false });
+    expect(seen).toEqual(['🚪 The door', '🚪 The door creaks.']);
+    expect(sent!.url).toBe('https://openrouter.ai/api/v1/chat/completions');
+    expect((sent!.init.headers as Record<string, string>).Authorization).toBe('Bearer sk-or-x');
+    const req = JSON.parse(sent!.init.body as string);
+    expect(req).toMatchObject({ model: 'anthropic/claude-haiku-5.5', stream: true, reasoning: { effort: 'low' } });
+    expect(req.messages[0].content[0]).toMatchObject({ text: 'SYS', cache_control: { type: 'ephemeral' } });
+    expect(req.messages[1]).toEqual({ role: 'user', content: 'USER' });
+  });
+
+  it('OpenRouter: explains a bad key and an empty balance', async () => {
+    const err = (status: number) =>
+      (async () => new Response(JSON.stringify({ error: { message: 'nope' } }), { status })) as unknown as typeof fetch;
+    await expect(runOpenRouter('k', 'm', call().c, err(401))).rejects.toThrow(/rejected the API key/);
+    await expect(runOpenRouter('k', 'm', call().c, err(402))).rejects.toThrow(/out of credits/);
+  });
+
+  it('built-in Claude: one prompt with the instructions first, quick tier for narration, errors pause narration', async () => {
+    const calls: { input: unknown; opts: Record<string, unknown> }[] = [];
+    const sample = (async (input: unknown, opts: Record<string, unknown>) => {
+      calls.push({ input, opts });
+      (opts.onText as (u: { text: string; delta: string }) => void)({ text: 'Hi', delta: 'Hi' });
+      return { text: 'Hi', truncated: false };
+    }) as never;
+    const { seen, c } = call();
+    expect(await runClaudeAi(sample, c)).toEqual({ text: 'Hi', refused: false });
+    expect(seen).toEqual(['Hi']);
+    expect(calls[0].input).toMatch(/^SYS[\s\S]*USER$/);
+    expect(calls[0].opts).toMatchObject({ modelTier: 'quick', cache: false });
+    await runClaudeAi(sample, call('answer').c);
+    expect(calls[1].opts.modelTier).toBe('default');
+
+    const denied = (async () => Promise.reject({ code: 'not_granted', message: 'x' })) as never;
+    const e = await runClaudeAi(denied, c).catch((x) => x);
+    expect(e).toBeInstanceOf(GmError);
+    expect(e.pause).toBe(true);
+    const refused = (async () => Promise.reject({ code: 'refused', message: 'x' })) as never;
+    expect(await runClaudeAi(refused, c)).toEqual({ text: '', refused: true });
+  });
+
+  it('auto picks built-in Claude on claude.ai, else OpenRouter, else Anthropic', () => {
+    const none = { anthropic: '', openrouter: '' };
+    expect(resolveProvider(DEFAULT_GM, true, { anthropic: 'a', openrouter: 'o' })).toBe('claude-ai');
+    expect(resolveProvider(DEFAULT_GM, false, { anthropic: 'a', openrouter: 'o' })).toBe('openrouter');
+    expect(resolveProvider(DEFAULT_GM, false, { anthropic: 'a', openrouter: '' })).toBe('anthropic');
+    expect(resolveProvider(DEFAULT_GM, false, none)).toBeNull();
+    expect(resolveProvider({ ...DEFAULT_GM, provider: 'claude-ai' }, false, none)).toBeNull();
+  });
+});

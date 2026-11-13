@@ -118,17 +118,29 @@ Every card has an effect handler, and a test checks that. These deviate slightly
 
 ## Claude GM mode (optional)
 
-GM mode is off by default, and the game is fully playable offline without it. Turn it on from the new-game screen or the 🎙️ button, then paste an Anthropic API key.
+GM mode is off by default, and the game is fully playable offline without it. Turn it on from the new-game screen or the 🎙️ button, then pick who answers:
 
-- **Your key:** it is stored only in this browser's localStorage. The browser calls the Claude API directly (the SDK's `dangerouslyAllowBrowser`, which sends the `anthropic-dangerous-direct-browser-access` header). There is no proxy.
-- **Claude never changes the game.** The engine decides everything. When the game is waiting on you, the app sends Claude the new engine events plus your view of the table: rival hands appear only as Door/Treasure counts, and the draw piles are hidden. A test checks that rival hand contents never reach a prompt.
-- **What you get:** GM-voice narration of each turn and the rivals' play-by-play. You also get ⚖️ rulings on moves the engine rejected, occasional 🎓 teaching notes, a line of rival table talk, and an end-of-game recap. The "Ask the GM" box answers rules questions.
-- **The system prompt** is built from the skill's Narration style, Rules cheat sheet, Playing the rivals and Game end sections. It is sent with prompt caching.
+| Option | Where it works | What it needs |
+| --- | --- | --- |
+| **Claude on claude.ai** | Only when the app runs as a claude.ai artifact (`npm run build:artifact`) | Nothing. It uses the viewer's own Claude plan; the first narration asks permission |
+| **OpenRouter** | Anywhere, including GitHub Pages | An OpenRouter API key. The default model is `anthropic/claude-haiku-5.5`; others come from OpenRouter's live model list |
+| **Anthropic** | Anywhere | An Anthropic API key. The default model is `claude-haiku-5-5`; Sonnet 5.5 and Opus 5.5 are selectable |
+
+"Auto" picks built-in Claude when it is available, otherwise whichever key is set.
+
+- **Keys:** they are stored only in this browser's localStorage and go straight from the browser to the service you picked. There is no proxy.
+- **Claude never changes the game.** The engine decides everything. When the game is waiting on you, the app sends the new engine events plus your view of the table: rival hands appear only as Door/Treasure counts, and the draw piles are hidden. A test checks that rival hand contents never reach a prompt.
+- **What you get:** GM-voice narration of each turn and the rivals' play-by-play, ⚖️ rulings on moves the engine rejected, occasional 🎓 teaching notes, a line of rival table talk, an end-of-game recap, and an "Ask the GM" box for rules questions.
+- **The prompt** is built from the skill's Narration style, Rules cheat sheet, Playing the rivals and Game end sections.
 - **Cost control:**
-  - The default model is `claude-haiku-5-5` at `effort: low`. Claude Sonnet 5.5 and Claude Opus 5.5 can be picked in GM settings; those two have server-side refusal fallbacks enabled.
+  - Narration uses a fast tier at low effort.
   - Prompts are short (new events, not the full state).
   - A "Narrate only my turns" toggle skips rival turns.
-- **Loading:** the SDK is loaded only when GM mode is first used, so the offline game doesn't download it.
+  - After any error, narration pauses until your next move; it never retries by itself.
+
+### Publishing as a claude.ai artifact
+
+`npm run build:artifact` writes `dist-artifact/`: `page.html` (the page fragment the Artifact tool wraps) and `assets/`. Publish `page.html` with the assets as supporting files and the `sample` capability. That copy saves games in its own browser storage, separate from the GitHub Pages copy.
 
 ## Polish
 

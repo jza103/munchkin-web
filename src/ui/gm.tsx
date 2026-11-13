@@ -1,17 +1,37 @@
-// Optional Claude GM mode. Reads engine events and the human's view; never changes game state.
+// Optional GM mode. Reads engine events and the human's view; never changes game state.
 import { useEffect, useRef, useState } from 'preact/hooks';
-import type Anthropic from '@anthropic-ai/sdk';
 import type { GameEvent, GameState } from '../engine/types';
 import { actor } from '../bots/bot';
 import { DEFAULT_GM_MODEL, GM_MODELS, type GmModel } from '../gm/models';
 import { eventsWithTurnPlayer, narrationPrompt, questionPrompt, systemPrompt } from '../gm/prompt';
+import {
+  GmError,
+  type GmCall,
+  type GmResult,
+  OPENROUTER_DEFAULT_MODEL,
+  OPENROUTER_FALLBACK_MODELS,
+  type ProviderId,
+  builtInClaude,
+  openRouterModels,
+  runAnthropic,
+  runClaudeAi,
+  runOpenRouter,
+} from '../gm/providers';
 
 const KEY = 'munchkin-web:gm:v1';
-const API_KEY = 'munchkin-web:gm-key:v1';
+const KEYS: Record<'anthropic' | 'openrouter', string> = {
+  anthropic: 'munchkin-web:gm-key:v1',
+  openrouter: 'munchkin-web:gm-openrouter-key:v1',
+};
 
 export interface GmSettings {
   enabled: boolean;
+  /** 'auto': built-in Claude on claude.ai, else whichever key is set (OpenRouter first) */
+  provider: ProviderId | 'auto';
+  /** model for an Anthropic key */
   model: GmModel;
+  /** model for OpenRouter */
+  orModel: string;
   onlyMyTurns: boolean;
 }
 
@@ -45,29 +65,57 @@ function write(k: string, v: unknown) {
   }
 }
 
-export function loadApiKey(): string {
+export function loadKey(p: 'anthropic' | 'openrouter'): string {
   try {
-    return localStorage.getItem(API_KEY) ?? '';
+    return localStorage.getItem(KEYS[p]) ?? '';
   } catch {
     return '';
   }
 }
-export function saveApiKey(k: string) {
+export function saveKey(p: 'anthropic' | 'openrouter', k: string) {
   try {
-    if (k) localStorage.setItem(API_KEY, k);
-    else localStorage.removeItem(API_KEY);
+    if (k) localStorage.setItem(KEYS[p], k);
+    else localStorage.removeItem(KEYS[p]);
   } catch {
     /* ignore */
   }
 }
 
-export const DEFAULT_GM: GmSettings = { enabled: false, model: DEFAULT_GM_MODEL, onlyMyTurns: false };
+export const DEFAULT_GM: GmSettings = {
+  enabled: false,
+  provider: 'auto',
+  model: DEFAULT_GM_MODEL,
+  orModel: OPENROUTER_DEFAULT_MODEL,
+  onlyMyTurns: false,
+};
 export function loadGmSettings(): GmSettings {
   return read(`${KEY}:settings`, DEFAULT_GM);
 }
 export function saveGmSettings(s: GmSettings) {
   write(`${KEY}:settings`, s);
 }
+
+/** Is the built-in claude.ai Claude available here? undefined while still checking. */
+export function useBuiltIn(): boolean | undefined {
+  const [ok, setOk] = useState<boolean | undefined>(undefined);
+  useEffect(() => {
+    void builtInClaude().then((f) => setOk(!!f));
+  }, []);
+  return ok;
+}
+
+/** Which provider will actually answer, or null when none is set up. */
+export function resolveProvider(s: GmSettings, builtIn: boolean | undefined, keys: { anthropic: string; openrouter: string }): ProviderId | null {
+  const usable = (p: ProviderId) => (p === 'claude-ai' ? !!builtIn : !!keys[p]);
+  if (s.provider !== 'auto') return usable(s.provider) ? s.provider : null;
+  return (['claude-ai', 'openrouter', 'anthropic'] as const).find(usable) ?? null;
+}
+
+export const PROVIDER_LABEL: Record<ProviderId, string> = {
+  'claude-ai': 'Claude on claude.ai (your Claude plan, no key)',
+  openrouter: 'OpenRouter API key',
+  anthropic: 'Anthropic API key',
+};
 
 /** Events to narrate now, or null if it's not a good moment (bots mid-flow, nothing new). */
 export function pickEvents(s: GameState, lastSeq: number, onlyMyTurns: boolean): GameEvent[] | null {
@@ -82,50 +130,54 @@ export function pickEvents(s: GameState, lastSeq: number, onlyMyTurns: boolean):
 }
 
 export function useGm(s: GameState, settings: GmSettings) {
-  const [apiKey, setApiKey] = useState(loadApiKey);
+  const builtIn = useBuiltIn();
+  const [keys, setKeys] = useState({ anthropic: loadKey('anthropic'), openrouter: loadKey('openrouter') });
+  const provider = resolveProvider(settings, builtIn, keys);
   const [mem, setMem] = useState<GmMemory>(() => {
     const m = read<GmMemory>(`${KEY}:memory`, { seed: s.seed, lastSeq: 0, recapped: false, entries: [] });
     return m.seed === s.seed ? m : { seed: s.seed, lastSeq: Math.max(0, s.eventSeq - 12), recapped: false, entries: [] };
   });
   const [busy, setBusy] = useState(false);
+  // after an error, automatic narration waits for the player's next move (never retries by itself)
+  const [paused, setPaused] = useState(false);
   const rejected = useRef<string[]>([]);
-  const [rejectTick, setRejectTick] = useState(0);
-  const client = useRef<{ key: string; c: Anthropic } | null>(null);
+  const [tick, setTick] = useState(0);
   const nextId = useRef(Date.now());
 
   useEffect(() => write(`${KEY}:memory`, { ...mem, entries: mem.entries.filter((e) => !e.streaming).slice(-40) }), [mem]);
-  // a new game resets the GM's memory
   useEffect(() => {
     if (mem.seed !== s.seed) setMem({ seed: s.seed, lastSeq: Math.max(0, s.eventSeq - 12), recapped: false, entries: [] });
   }, [s.seed]);
-  // when GM mode is switched on mid-game, don't narrate the whole backlog
-  const wasEnabled = useRef(settings.enabled);
+  const wasOn = useRef(settings.enabled);
   useEffect(() => {
-    if (settings.enabled && !wasEnabled.current) setMem((m) => ({ ...m, lastSeq: Math.max(m.lastSeq, s.eventSeq - 12) }));
-    wasEnabled.current = settings.enabled;
+    if (settings.enabled && !wasOn.current) setMem((m) => ({ ...m, lastSeq: Math.max(m.lastSeq, s.eventSeq - 12) }));
+    wasOn.current = settings.enabled;
   }, [settings.enabled]);
 
-  // the SDK is only downloaded once GM mode is actually used
-  const sdk = () => import('../gm/client');
-  const getClient = async () => {
-    const { makeClient } = await sdk();
-    if (!client.current || client.current.key !== apiKey) client.current = { key: apiKey, c: makeClient(apiKey) };
-    return client.current.c;
+  const call = async (c: GmCall): Promise<GmResult> => {
+    if (provider === 'claude-ai') {
+      const sample = await builtInClaude();
+      if (!sample) throw new GmError('Built-in Claude is not available on this page.');
+      return runClaudeAi(sample, c);
+    }
+    if (provider === 'openrouter') return runOpenRouter(keys.openrouter, settings.orModel || OPENROUTER_DEFAULT_MODEL, c);
+    if (provider === 'anthropic') return runAnthropic(keys.anthropic, settings.model, c);
+    throw new GmError('Set up the GM first (GM settings).');
   };
 
-  const run = async (kind: GmEntry['kind'], user: string, after: (m: GmMemory) => GmMemory) => {
+  const run = async (kind: 'narration' | 'answer', user: string, after: (m: GmMemory) => GmMemory) => {
     const id = ++nextId.current;
     setBusy(true);
     setMem((m) => after({ ...m, entries: [...m.entries, { id, kind, text: '', streaming: true }] }));
     const update = (text: string, done = false, errKind?: GmEntry['kind']) =>
       setMem((m) => ({ ...m, entries: m.entries.map((e) => (e.id === id ? { ...e, text, streaming: !done, kind: errKind ?? e.kind } : e)) }));
     try {
-      const { streamGm } = await sdk();
-      const r = await streamGm(await getClient(), { model: settings.model, system: systemPrompt(), user }, (t) => update(t));
+      const r = await call({ system: systemPrompt(), user, kind, onText: (t) => update(t) });
       update(r.refused && !r.text ? '(The GM declined to narrate this one.)' : r.text, true);
     } catch (e) {
-      const { explainError } = await sdk();
-      update(`⚠️ ${explainError(e)}`, true, 'error');
+      const ge = e instanceof GmError ? e : new GmError(String(e));
+      if (ge.pause) setPaused(true);
+      update(`⚠️ ${ge.message}`, true, 'error');
     } finally {
       setBusy(false);
     }
@@ -133,12 +185,12 @@ export function useGm(s: GameState, settings: GmSettings) {
 
   const recent = () => mem.entries.filter((e) => e.kind === 'narration' && e.text).slice(-1).map((e) => e.text);
 
-  // Narrate when the game is waiting on you (or is over) and there's something new.
+  // Narrate when the game is waiting on the player (or is over) and something new happened.
   useEffect(() => {
-    if (!settings.enabled || !apiKey || busy) return;
+    if (!settings.enabled || !provider || busy || paused) return;
     if (s.phase === 'gameOver') {
       if (mem.recapped) return;
-      void run('narration', narrationPrompt({ state: s, events: s.events.slice(-250), rejected: [], recent: recent() }), (m) => ({
+      void run('answer', narrationPrompt({ state: s, events: s.events.slice(-250), rejected: [], recent: recent() }), (m) => ({
         ...m,
         recapped: true,
         lastSeq: s.eventSeq,
@@ -153,24 +205,31 @@ export function useGm(s: GameState, settings: GmSettings) {
       ...m,
       lastSeq: s.eventSeq,
     }));
-  }, [s, settings.enabled, apiKey, busy, rejectTick]);
+  }, [s, settings.enabled, provider, busy, paused, tick]);
 
   return {
-    apiKey,
-    setApiKey: (k: string) => {
-      saveApiKey(k);
-      setApiKey(k);
+    provider,
+    builtIn,
+    keys,
+    setKey: (p: 'anthropic' | 'openrouter', k: string) => {
+      saveKey(p, k);
+      setKeys((x) => ({ ...x, [p]: k }));
+      setPaused(false);
     },
     entries: mem.entries,
     busy,
+    paused,
+    /** The player made a move: resume narration if an error had paused it. */
+    notifyAction: () => setPaused(false),
     /** Report a move the engine rejected, for a ⚖️ ruling. */
     reportRejected: (text: string) => {
       if (!settings.enabled) return;
       rejected.current.push(text);
-      setRejectTick((t) => t + 1);
+      setPaused(false);
+      setTick((t) => t + 1);
     },
     ask: (question: string) => {
-      if (!apiKey || busy || !question.trim()) return;
+      if (!provider || busy || !question.trim()) return;
       const qid = ++nextId.current;
       setMem((m) => ({ ...m, entries: [...m.entries, { id: qid, kind: 'question', text: question }] }));
       void run('answer', questionPrompt(s, question, s.events.slice(-15)), (m) => m);
@@ -191,21 +250,30 @@ export function GmPanel({ gm, settings, onSettings }: { gm: Gm; settings: GmSett
   return (
     <section class="panel gm" aria-label="Game master">
       <header class="row">
-        <span>🎙️ Game master {gm.busy && <span class="muted small">· narrating…</span>}</span>
+        <span>
+          🎙️ Game master {gm.busy && <span class="muted small">· narrating…</span>}
+          {gm.paused && !gm.busy && <span class="muted small">· paused until your next move</span>}
+        </span>
         <button class="ghost small" onClick={onSettings}>
           Settings
         </button>
       </header>
-      {!gm.apiKey ? (
+      {!gm.provider ? (
         <p class="muted small">
-          Add your Anthropic API key in <button class="linkish" onClick={onSettings}>GM settings</button> to hear the GM.
+          {gm.builtIn === undefined ? 'Checking for built-in Claude…' : 'Add an OpenRouter or Anthropic API key in '}
+          {gm.builtIn !== undefined && (
+            <button class="linkish" onClick={onSettings}>
+              GM settings
+            </button>
+          )}
+          {gm.builtIn !== undefined && ' to hear the GM.'}
         </p>
       ) : (
         <>
           <ol ref={list}>
             {gm.entries.map((e) => (
               <li key={e.id} class={`gm-${e.kind}`}>
-                {e.kind === 'question' ? <b>You: {e.text}</b> : e.text || (e.streaming ? '…' : '')}
+                {e.kind === 'question' ? <b>You: {e.text}</b> : e.text || (e.streaming ? 'Thinking…' : '')}
               </li>
             ))}
             {!gm.entries.length && <li class="muted small">The GM speaks when it's your move.</li>}
@@ -218,7 +286,7 @@ export function GmPanel({ gm, settings, onSettings }: { gm: Gm; settings: GmSett
               setQ('');
             }}
           >
-            <input aria-label="Ask the GM" placeholder="Ask the GM a rules question…" value={q} onInput={(e) => setQ((e.target as HTMLInputElement).value)} />
+            <input id="gm-ask" aria-label="Ask the GM" placeholder="Ask the GM a rules question…" value={q} onInput={(e) => setQ((e.target as HTMLInputElement).value)} />
             <button disabled={gm.busy || !q.trim()}>Ask</button>
           </form>
         </>
@@ -227,68 +295,119 @@ export function GmPanel({ gm, settings, onSettings }: { gm: Gm; settings: GmSett
   );
 }
 
-export function GmSettingsSheet(props: {
-  gm: Gm;
+/** Provider choice + key fields, shared by the settings sheet and the new-game screen. */
+export function ProviderFields(props: {
   settings: GmSettings;
   setSettings: (s: GmSettings) => void;
-  close: () => void;
+  builtIn: boolean | undefined;
+  keys: { anthropic: string; openrouter: string };
+  onKey: (p: 'anthropic' | 'openrouter', k: string) => void;
 }) {
+  const { settings, setSettings, builtIn } = props;
+  const [models, setModels] = useState<string[]>(OPENROUTER_FALLBACK_MODELS);
+  const choices: ProviderId[] = builtIn ? ['claude-ai', 'openrouter', 'anthropic'] : ['openrouter', 'anthropic'];
+  const effective = settings.provider === 'auto' || !choices.includes(settings.provider) ? choices[0] : settings.provider;
+  useEffect(() => {
+    if (effective === 'openrouter') void openRouterModels().then(setModels);
+  }, [effective]);
+  return (
+    <>
+      <label for="gm-provider">
+        Who answers
+        <select id="gm-provider" value={effective} onChange={(e) => setSettings({ ...settings, provider: (e.target as HTMLSelectElement).value as ProviderId })}>
+          {choices.map((p) => (
+            <option key={p} value={p}>
+              {PROVIDER_LABEL[p]}
+            </option>
+          ))}
+        </select>
+      </label>
+      {effective === 'claude-ai' && (
+        <p class="small muted">Uses your own Claude plan. The first narration asks you to allow it.</p>
+      )}
+      {effective === 'openrouter' && (
+        <>
+          <label for="gm-or-key">
+            OpenRouter API key <span class="muted small">(stored only in this browser)</span>
+            <input id="gm-or-key" type="password" autocomplete="off" placeholder="sk-or-…" value={props.keys.openrouter} onInput={(e) => props.onKey('openrouter', (e.target as HTMLInputElement).value.trim())} />
+          </label>
+          <label for="gm-or-model">
+            Model
+            <select id="gm-or-model" value={settings.orModel} onChange={(e) => setSettings({ ...settings, orModel: (e.target as HTMLSelectElement).value })}>
+              {[...new Set([settings.orModel, ...models])].map((m) => (
+                <option key={m} value={m}>
+                  {m}
+                  {m === OPENROUTER_DEFAULT_MODEL ? ' (fast, cheapest — default)' : ''}
+                </option>
+              ))}
+            </select>
+          </label>
+        </>
+      )}
+      {effective === 'anthropic' && (
+        <>
+          <label for="gm-an-key">
+            Anthropic API key <span class="muted small">(stored only in this browser)</span>
+            <input id="gm-an-key" type="password" autocomplete="off" placeholder="sk-ant-…" value={props.keys.anthropic} onInput={(e) => props.onKey('anthropic', (e.target as HTMLInputElement).value.trim())} />
+          </label>
+          <label for="gm-an-model">
+            Model
+            <select id="gm-an-model" value={settings.model} onChange={(e) => setSettings({ ...settings, model: (e.target as HTMLSelectElement).value as GmModel })}>
+              {GM_MODELS.map((m) => (
+                <option key={m.id} value={m.id}>
+                  {m.label}
+                </option>
+              ))}
+            </select>
+          </label>
+        </>
+      )}
+    </>
+  );
+}
+
+export function GmSettingsSheet(props: { gm: Gm; settings: GmSettings; setSettings: (s: GmSettings) => void; close: () => void }) {
   const { gm, settings, setSettings } = props;
-  const [key, setKey] = useState(gm.apiKey);
+  const [keys, setKeys] = useState(gm.keys);
+  const save = () => {
+    gm.setKey('openrouter', keys.openrouter);
+    gm.setKey('anthropic', keys.anthropic);
+    props.close();
+  };
   return (
     <div class="overlay" onClick={props.close}>
       <div class="sheet" role="dialog" aria-label="GM settings" onClick={(e) => e.stopPropagation()}>
         <header>
-          <b>🎙️ Claude GM settings</b>
+          <b>🎙️ GM settings</b>
           <button class="ghost" onClick={props.close} aria-label="Close">
             ✕
           </button>
         </header>
         <p class="small muted">
-          The GM narrates, rules on moves and teaches. It never changes the game. Your key is stored only in this browser and sent
-          straight to the Claude API; it only sees your view (rival hands are counts).
+          The GM narrates, rules on moves and teaches. It never changes the game, and it only sees your view: rival hands are
+          counts. Keys stay in this browser and go only to the service you pick.
         </p>
         <label class="chip">
           <input type="checkbox" checked={settings.enabled} onChange={() => setSettings({ ...settings, enabled: !settings.enabled })} /> GM mode on
         </label>
-        <label>
-          Anthropic API key
-          <input type="password" autocomplete="off" placeholder="sk-ant-…" value={key} onInput={(e) => setKey((e.target as HTMLInputElement).value.trim())} />
-        </label>
-        <label>
-          Model
-          <select value={settings.model} onChange={(e) => setSettings({ ...settings, model: (e.target as HTMLSelectElement).value as GmModel })}>
-            {GM_MODELS.map((m) => (
-              <option key={m.id} value={m.id}>
-                {m.label}
-              </option>
-            ))}
-          </select>
-        </label>
+        <ProviderFields settings={settings} setSettings={setSettings} builtIn={gm.builtIn} keys={keys} onKey={(p, k) => setKeys((x) => ({ ...x, [p]: k }))} />
         <label class="chip">
-          <input type="checkbox" checked={settings.onlyMyTurns} onChange={() => setSettings({ ...settings, onlyMyTurns: !settings.onlyMyTurns })} /> Narrate only
-          my turns (cheaper)
+          <input type="checkbox" checked={settings.onlyMyTurns} onChange={() => setSettings({ ...settings, onlyMyTurns: !settings.onlyMyTurns })} /> Narrate
+          only my turns (cheaper)
         </label>
         <div class="buttons">
-          <button
-            class="primary"
-            onClick={() => {
-              gm.setApiKey(key);
-              props.close();
-            }}
-          >
+          <button class="primary" onClick={save}>
             Save
           </button>
-          {gm.apiKey && (
-            <button
-              onClick={() => {
-                gm.setApiKey('');
-                setKey('');
-              }}
-            >
-              Forget key
-            </button>
-          )}
+          <button
+            onClick={() => {
+              setKeys({ anthropic: '', openrouter: '' });
+              gm.setKey('openrouter', '');
+              gm.setKey('anthropic', '');
+            }}
+          >
+            Forget keys
+          </button>
           <button class="ghost" onClick={gm.clear}>
             Clear GM log
           </button>

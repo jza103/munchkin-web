@@ -11,7 +11,7 @@ import { botStep } from '../bots/driver';
 import { PERSONALITIES, personalityFor } from '../bots/personalities';
 import { cardsOfAction, describeAction, emoji, kindLabel } from './describe';
 import { SPEED_MS, type Settings, loadGame, loadSettings, saveGame, saveSettings } from './storage';
-import { type GmSettings, GmPanel, GmSettingsSheet, loadApiKey, loadGmSettings, saveApiKey, saveGmSettings, useGm } from './gm';
+import { type GmSettings, GmPanel, GmSettingsSheet, ProviderFields, loadGmSettings, loadKey, saveGmSettings, saveKey, useBuiltIn, useGm } from './gm';
 import { recap } from './recap';
 import { play, soundFor } from './sound';
 import { artStyle } from './art';
@@ -35,9 +35,9 @@ export function App() {
       <NewGame
         canContinue={!!state && state.phase !== 'gameOver'}
         onContinue={() => setScreen('game')}
-        gmOn={gmSettings.enabled}
-        onStart={(s, gm) => {
-          setGmSettings({ ...gmSettings, enabled: gm });
+        gmSettings={gmSettings}
+        setGmSettings={setGmSettings}
+        onStart={(s) => {
           setState(s);
           setScreen('game');
         }}
@@ -60,18 +60,28 @@ export function App() {
 // New game
 // ---------------------------------------------------------------------------
 
-function NewGame(props: { canContinue: boolean; onContinue: () => void; onStart: (s: GameState, gm: boolean) => void; gmOn: boolean }) {
+function NewGame(props: {
+  canContinue: boolean;
+  onContinue: () => void;
+  onStart: (s: GameState) => void;
+  gmSettings: GmSettings;
+  setGmSettings: (s: GmSettings) => void;
+}) {
   const [name, setName] = useState('Jason');
   const [gender, setGender] = useState<Gender>('male');
   const [rivals, setRivals] = useState(2);
-  const [gm, setGm] = useState(props.gmOn);
-  const [key, setKey] = useState(loadApiKey);
+  const gm = props.gmSettings.enabled;
+  const builtIn = useBuiltIn();
+  const [keys, setKeys] = useState({ anthropic: loadKey('anthropic'), openrouter: loadKey('openrouter') });
   const [error, setError] = useState('');
   const start = () => {
     try {
-      if (gm && key) saveApiKey(key);
+      if (gm) {
+        saveKey('openrouter', keys.openrouter);
+        saveKey('anthropic', keys.anthropic);
+      }
       const picks = PERSONALITIES.slice(0, rivals).map((p) => ({ name: p.name === name ? `${p.name} 2` : p.name, gender: p.gender }));
-      props.onStart(newGame({ seed: `${Date.now()}-${Math.random()}`, human: { name: name.trim() || 'You', gender }, rivals: picks }), gm);
+      props.onStart(newGame({ seed: `${Date.now()}-${Math.random()}`, human: { name: name.trim() || 'You', gender }, rivals: picks }));
     } catch (e) {
       setError((e as Error).message);
     }
@@ -110,13 +120,17 @@ function NewGame(props: { canContinue: boolean; onContinue: () => void; onStart:
           ))}
         </ul>
         <label class="chip">
-          <input type="checkbox" checked={gm} onChange={() => setGm(!gm)} /> 🎙️ Claude GM narration <span class="muted small">(optional, needs your API key)</span>
+          <input type="checkbox" checked={gm} onChange={() => props.setGmSettings({ ...props.gmSettings, enabled: !gm })} /> 🎙️ Claude GM narration{' '}
+          <span class="muted small">(optional)</span>
         </label>
         {gm && (
-          <label>
-            Anthropic API key <span class="muted small">(stored only in this browser)</span>
-            <input type="password" autocomplete="off" placeholder="sk-ant-…" value={key} onInput={(e) => setKey((e.target as HTMLInputElement).value.trim())} />
-          </label>
+          <ProviderFields
+            settings={props.gmSettings}
+            setSettings={props.setGmSettings}
+            builtIn={builtIn}
+            keys={keys}
+            onKey={(p, k) => setKeys((x) => ({ ...x, [p]: k }))}
+          />
         )}
         {error && <p class="error">{error}</p>}
         <button class="primary wide" onClick={start}>
@@ -186,6 +200,7 @@ function Game(props: {
     }
     setNotice(null);
     setModal(null);
+    gm.notifyAction();
     setState(r.state);
     return true;
   };
