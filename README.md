@@ -45,8 +45,9 @@ src/engine/            pure TypeScript, no DOM: apply(state, action), rules, dec
   view.ts              a player's view (other hands as Door/Treasure counts)
   invariants.ts        illegal-state detector used by the bot-game tests
 src/bots/              personalities (Alex, Sam, Morgan, Riley, Quinn), heuristics, driver
+src/gm/                optional Claude GM: prompts built from the skill, bring-your-own-key client
 src/ui/                Preact UI, save/resume (localStorage)
-tests/                 Vitest: cards schema, engine core, turn, combat, running, Bad Stuff/curses, bots, 500 games
+tests/                 Vitest: cards schema, engine core, turn, combat, running, Bad Stuff/curses, bots, 500 games, GM
 ```
 
 ## Engine model
@@ -115,6 +116,27 @@ Every card has an effect handler, and a test checks that. These deviate slightly
 - Bots never propose trades. They do accept or decline yours.
 - Bots never use Cheat! or Illusion offensively. They do play other cards that deny a win.
 
+## Claude GM mode (optional)
+
+GM mode is off by default, and the game is fully playable offline without it. Turn it on from the new-game screen or the 🎙️ button, then paste an Anthropic API key.
+
+- **Your key:** it is stored only in this browser's localStorage. The browser calls the Claude API directly (the SDK's `dangerouslyAllowBrowser`, which sends the `anthropic-dangerous-direct-browser-access` header). There is no proxy.
+- **Claude never changes the game.** The engine decides everything. When the game is waiting on you, the app sends Claude the new engine events plus your view of the table: rival hands appear only as Door/Treasure counts, and the draw piles are hidden. A test checks that rival hand contents never reach a prompt.
+- **What you get:** GM-voice narration of each turn and the rivals' play-by-play. You also get ⚖️ rulings on moves the engine rejected, occasional 🎓 teaching notes, a line of rival table talk, and an end-of-game recap. The "Ask the GM" box answers rules questions.
+- **The system prompt** is built from the skill's Narration style, Rules cheat sheet, Playing the rivals and Game end sections. It is sent with prompt caching.
+- **Cost control:**
+  - The default model is `claude-haiku-5-5` at `effort: low`. Claude Sonnet 5.5 and Claude Opus 5.5 can be picked in GM settings; those two have server-side refusal fallbacks enabled.
+  - Prompts are short (new events, not the full state).
+  - A "Narrate only my turns" toggle skips rival turns.
+- **Loading:** the SDK is loaded only when GM mode is first used, so the offline game doesn't download it.
+
+## Polish
+
+- **Card art:** placeholder art for each card (a colour band by card type, plus its emoji).
+- **Sound:** synthesized sound effects for doors, rolls, curses, level changes, deaths, wins and the game's end. Toggle them with 🔊/🔇.
+- **Rival speed:** slow, normal, fast or instant. You can also pause the rivals.
+- **End-of-game recap:** the 3 to 4 moments that decided the game, each with a 🎓 lesson. It works without Claude; with GM mode on, Claude narrates its own recap too.
+
 ## Status
 
-Milestones 1 to 6 are done: data, engine core, full rules, bots, UI with save/resume, and deploy workflow. Milestone 7 (Claude GM mode) and 8 (polish) are not started. The GM toggle on the new-game screen is disabled for now.
+All eight milestones are done: data, engine core, full rules, bots, UI with save/resume, deploy, Claude GM mode, and polish.

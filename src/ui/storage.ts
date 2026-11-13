@@ -6,10 +6,10 @@ const SETTINGS = 'munchkin-web:settings:v1';
 
 export interface Settings {
   speed: 'slow' | 'normal' | 'fast' | 'instant';
-  gm: boolean;
+  sound: boolean;
 }
 
-export const DEFAULT_SETTINGS: Settings = { speed: 'normal', gm: false };
+export const DEFAULT_SETTINGS: Settings = { speed: 'normal', sound: true };
 
 export function loadGame(): GameState | null {
   try {

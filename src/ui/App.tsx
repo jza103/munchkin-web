@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'preact/hooks';
+import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { apply, check } from '../engine/actions';
 import { cardOf, goldOf, nameOf } from '../engine/cards';
 import { combatTotals, monsterStrength, monsterTreasure } from '../engine/combat';
@@ -11,6 +11,10 @@ import { botStep } from '../bots/driver';
 import { PERSONALITIES, personalityFor } from '../bots/personalities';
 import { cardsOfAction, describeAction, emoji, kindLabel } from './describe';
 import { SPEED_MS, type Settings, loadGame, loadSettings, saveGame, saveSettings } from './storage';
+import { type GmSettings, GmPanel, GmSettingsSheet, loadApiKey, loadGmSettings, saveApiKey, saveGmSettings, useGm } from './gm';
+import { recap } from './recap';
+import { play, soundFor } from './sound';
+import { artStyle } from './art';
 
 // ---------------------------------------------------------------------------
 // App shell
@@ -20,8 +24,10 @@ export function App() {
   const [state, setState] = useState<GameState | null>(() => loadGame());
   const [settings, setSettings] = useState<Settings>(() => loadSettings());
   const [screen, setScreen] = useState<'new' | 'game'>(() => (loadGame() ? 'game' : 'new'));
+  const [gmSettings, setGmSettings] = useState<GmSettings>(() => loadGmSettings());
 
   useEffect(() => saveSettings(settings), [settings]);
+  useEffect(() => saveGmSettings(gmSettings), [gmSettings]);
   useEffect(() => saveGame(state), [state]);
 
   if (screen === 'new' || !state)
@@ -29,29 +35,41 @@ export function App() {
       <NewGame
         canContinue={!!state && state.phase !== 'gameOver'}
         onContinue={() => setScreen('game')}
-        settings={settings}
+        gmOn={gmSettings.enabled}
         onStart={(s, gm) => {
-          setSettings({ ...settings, gm });
+          setGmSettings({ ...gmSettings, enabled: gm });
           setState(s);
           setScreen('game');
         }}
       />
     );
-  return <Game state={state} setState={setState} settings={settings} setSettings={setSettings} onNew={() => setScreen('new')} />;
+  return (
+    <Game
+      state={state}
+      setState={setState}
+      settings={settings}
+      setSettings={setSettings}
+      gmSettings={gmSettings}
+      setGmSettings={setGmSettings}
+      onNew={() => setScreen('new')}
+    />
+  );
 }
 
 // ---------------------------------------------------------------------------
 // New game
 // ---------------------------------------------------------------------------
 
-function NewGame(props: { canContinue: boolean; onContinue: () => void; onStart: (s: GameState, gm: boolean) => void; settings: Settings }) {
+function NewGame(props: { canContinue: boolean; onContinue: () => void; onStart: (s: GameState, gm: boolean) => void; gmOn: boolean }) {
   const [name, setName] = useState('Jason');
   const [gender, setGender] = useState<Gender>('male');
   const [rivals, setRivals] = useState(2);
-  const [gm, setGm] = useState(false);
+  const [gm, setGm] = useState(props.gmOn);
+  const [key, setKey] = useState(loadApiKey);
   const [error, setError] = useState('');
   const start = () => {
     try {
+      if (gm && key) saveApiKey(key);
       const picks = PERSONALITIES.slice(0, rivals).map((p) => ({ name: p.name === name ? `${p.name} 2` : p.name, gender: p.gender }));
       props.onStart(newGame({ seed: `${Date.now()}-${Math.random()}`, human: { name: name.trim() || 'You', gender }, rivals: picks }), gm);
     } catch (e) {
@@ -92,8 +110,14 @@ function NewGame(props: { canContinue: boolean; onContinue: () => void; onStart:
           ))}
         </ul>
         <label class="chip">
-          <input type="checkbox" checked={gm} disabled onChange={() => setGm(!gm)} /> Claude GM narration <span class="muted">(milestone 7, not built yet)</span>
+          <input type="checkbox" checked={gm} onChange={() => setGm(!gm)} /> 🎙️ Claude GM narration <span class="muted small">(optional, needs your API key)</span>
         </label>
+        {gm && (
+          <label>
+            Anthropic API key <span class="muted small">(stored only in this browser)</span>
+            <input type="password" autocomplete="off" placeholder="sk-ant-…" value={key} onInput={(e) => setKey((e.target as HTMLInputElement).value.trim())} />
+          </label>
+        )}
         {error && <p class="error">{error}</p>}
         <button class="primary wide" onClick={start}>
           🚪 Start a new game
@@ -113,6 +137,7 @@ type Modal =
   | { kind: 'sell' }
   | { kind: 'trade' }
   | { kind: 'power'; power: PowerName; target?: { player?: PlayerId; card?: CardId; monster?: number } }
+  | { kind: 'gm' }
   | null;
 
 const GLOBAL = new Set<Action['type']>(['kickDoor', 'lootRoom', 'endTurn', 'fight', 'runAway', 'pass', 'respondHelp', 'respondTrade', 'useRat', 'chooseOption', 'avoidMonster', 'resurrect']);
@@ -122,9 +147,19 @@ function Game(props: {
   setState: (s: GameState) => void;
   settings: Settings;
   setSettings: (s: Settings) => void;
+  gmSettings: GmSettings;
+  setGmSettings: (s: GmSettings) => void;
   onNew: () => void;
 }) {
   const { state: s, setState, settings } = props;
+  const gm = useGm(s, props.gmSettings);
+  // sound effects for whatever just happened
+  const heard = useRef(s.eventSeq);
+  useEffect(() => {
+    const fresh = s.events.filter((e) => e.seq > heard.current);
+    heard.current = s.eventSeq;
+    if (settings.sound && fresh.length) play(soundFor(fresh));
+  }, [s.eventSeq]);
   const me = s.human;
   const [modal, setModal] = useState<Modal>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -146,6 +181,7 @@ function Game(props: {
     const r = apply(s, a);
     if (!r.ok) {
       setNotice(`⚖️ Not valid: ${r.error}`);
+      gm.reportRejected(`${describeAction(s, a)} — engine says: ${r.error}`);
       return false;
     }
     setNotice(null);
@@ -170,6 +206,12 @@ function Game(props: {
           <option value="fast">Fast</option>
           <option value="instant">Instant</option>
         </select>
+        <button class="ghost" onClick={() => props.setSettings({ ...settings, sound: !settings.sound })} title="Sound" aria-label="Toggle sound">
+          {settings.sound ? '🔊' : '🔇'}
+        </button>
+        <button class="ghost" onClick={() => setModal({ kind: 'gm' })} title="Claude GM settings" aria-label="GM settings">
+          🎙️
+        </button>
         <button class="ghost" onClick={() => setPaused(!paused)} title="Pause rival bots">
           {paused ? '▶️' : '⏸️'}
         </button>
@@ -190,6 +232,7 @@ function Game(props: {
           <Hand s={s} me={me} legal={legal} onCard={(card) => setModal({ kind: 'card', card })} />
         </div>
         <div class="col side">
+          <GmPanel gm={gm} settings={props.gmSettings} onSettings={() => setModal({ kind: 'gm' })} />
           <Log s={s} />
         </div>
       </div>
@@ -198,6 +241,7 @@ function Game(props: {
       {modal?.kind === 'help' && <HelpModal s={s} me={me} act={act} close={() => setModal(null)} />}
       {modal?.kind === 'sell' && <SellModal s={s} me={me} act={act} close={() => setModal(null)} />}
       {modal?.kind === 'trade' && <TradeModal s={s} me={me} act={act} close={() => setModal(null)} />}
+      {modal?.kind === 'gm' && <GmSettingsSheet gm={gm} settings={props.gmSettings} setSettings={props.setGmSettings} close={() => setModal(null)} />}
       {modal?.kind === 'power' && <PowerModal s={s} me={me} power={modal.power} target={modal.target} act={act} close={() => setModal(null)} />}
     </div>
   );
@@ -383,6 +427,15 @@ function Prompt({ s, me, legal, act }: { s: GameState; me: PlayerId; legal: Acti
     return (
       <section class="panel prompt gameover">
         <h2>🏆 {s.winners.join(' and ')} reach{s.winners.length > 1 ? '' : 'es'} Level 10!</h2>
+        <h3>The moments that decided it</h3>
+        <ol class="recap">
+          {recap(s).map((m, i) => (
+            <li key={i}>
+              <b>Turn {m.turn}:</b> {m.text}
+              <div class="small">🎓 {m.lesson}</div>
+            </li>
+          ))}
+        </ol>
         <p class="muted small">All hands are revealed in the log.</p>
       </section>
     );
@@ -566,8 +619,10 @@ function Tile({ card, label, hot, onClick, selected }: { card: CardId; label?: s
   const c = cardOf(card);
   return (
     <button class={`tile ${c.deck} ${hot ? 'hot' : ''} ${selected ? 'selected' : ''}`} onClick={onClick}>
+      <span class="art" style={artStyle(card)} aria-hidden="true">
+        {emoji(card)}
+      </span>
       <span class="tile-top">
-        <span>{emoji(card)}</span>
         <span class="muted small">{label ?? kindLabel(card)}</span>
       </span>
       <span class="tile-name">{nameOf(card)}</span>
@@ -626,6 +681,9 @@ function CardSheet({ s, card, legal, act, close }: { s: GameState; card: CardId;
   });
   return (
     <Sheet title={`${emoji(card)} ${nameOf(card)}`} close={close}>
+      <div class="art big-art" style={artStyle(card)} aria-hidden="true">
+        {emoji(card)}
+      </div>
       <p class="muted small">
         {kindLabel(card)} · {c.deck === 'door' ? 'Door' : 'Treasure'} card{goldOf(card) ? ` · ${goldOf(card)} Gold` : ''}
       </p>
