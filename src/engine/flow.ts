@@ -137,6 +137,14 @@ export function execOp(s: GameState, v: PlayerId, op: Op, source: CardId, rollVa
       return setLevel(s, v, to);
     }
     case 'loseSlot': {
+      // Chicken on Your Head: any curse or Bad Stuff that takes your headgear takes the chicken too.
+      if (op.slot === 'head') {
+        const chicken = p.curses.find((c) => cardOf(c).id === 'curse-chicken-on-your-head');
+        if (chicken) {
+          discard(s, chicken);
+          addLog(s, 'effect', `${why}: the chicken on ${v}'s head goes too. The curse is lifted.`, v);
+        }
+      }
       const item = equippedItems(p).find((c) => itemOf(c)!.slot === op.slot && !isBorrowed(s, c));
       if (item) {
         addLog(s, 'badStuff', `${why}: ${v} loses ${nameOf(item)}.`, v);
@@ -782,7 +790,7 @@ export function startTurn(s: GameState, id: PlayerId) {
   const p = player(s, id);
   if (p.dead) {
     p.dead = false;
-    deal(s, id);
+    deal(s, id, true);
     addLog(s, 'revive', `${id} comes back to life and draws 4 Door and 4 Treasure.`, id);
   }
 }

@@ -25,7 +25,6 @@ import {
 } from './flow';
 import {
   classCards,
-  classes,
   curseRules,
   equipError,
   bigError,
@@ -57,6 +56,9 @@ import {
   cloneState,
   roll,
   zone,
+  isDrawTrigger,
+  resolveDrawTrigger,
+  sweepDrawTriggers,
 } from './state';
 import type { Action, ApplyResult, CardId, GameState, Pending, PlayerId, Target } from './types';
 
@@ -258,11 +260,10 @@ export const CARD_HANDLERS: Record<string, CardHandler> = {
   },
   divineIntervention: {
     ctx: COMBAT,
-    check: () => null,
+    // Resolves the moment it is drawn (see resolveDrawTrigger); it is never played from a hand.
+    check: () => 'Divine Intervention resolves the moment it is drawn',
     exec(s, id, card) {
-      discard(s, card);
-      addLog(s, 'play', `${id} plays Divine Intervention: every Cleric goes up a level.`, id);
-      for (const o of s.order) if (classes(player(s, o)).includes('cleric')) changeLevel(s, o, 1, false);
+      resolveDrawTrigger(s, card, id, false);
     },
   },
   helpMeOutHere: {
@@ -509,11 +510,10 @@ export const CARD_HANDLERS: Record<string, CardHandler> = {
   },
   hoard: {
     ctx: COMBAT,
-    check: () => null,
+    // Resolves the moment it is drawn (see resolveDrawTrigger); it is never played from a hand.
+    check: () => 'Hoard! resolves the moment it is drawn',
     exec(s, id, card) {
-      discard(s, card);
-      const got = drawTo(s, 'treasure', 3, `${id}.hand`);
-      addLog(s, 'play', `${id} plays Hoard! and draws ${got.length} Treasure face-down.`, id);
+      drawTo(s, 'treasure', resolveDrawTrigger(s, card, id, false), `${id}.hand`, false);
     },
   },
 };
@@ -616,7 +616,7 @@ const H: { [K in Action['type']]: Handler<K> } = {
     check: (s, a) => (s.players[a.player] ? null : `Unknown player ${a.player}`),
     exec(s, a) {
       player(s, a.player).dead = false;
-      deal(s, a.player);
+      deal(s, a.player, true);
       addLog(s, 'revive', `${a.player} revives and draws 4 Door + 4 Treasure.`, a.player);
     },
   },
@@ -791,6 +791,11 @@ const H: { [K in Action['type']]: Handler<K> } = {
       if (!card) return addLog(s, 'door', 'There are no Door cards left anywhere.', a.player);
       const c = cardOf(card);
       addLog(s, 'door', `${a.player} kicks open the door: ${nameOf(card)}!`, a.player, { card });
+      if (isDrawTrigger(card)) {
+        s.play.push(card);
+        resolveDrawTrigger(s, card, a.player, true);
+        return;
+      }
       if (c.kind === 'monster') {
         s.play.push(card);
         startCombat(s, a.player, card);
@@ -1019,9 +1024,10 @@ const H: { [K in Action['type']]: Handler<K> } = {
         const top = s.discard_treasure.pop()!;
         s.play.push(top);
         discard(s, a.discard);
-        p.drawn.push(top);
         p.remaining -= 1;
         addLog(s, 'play', `${a.player} uses Resurrection: takes ${nameOf(top)} from the discards (paying ${nameOf(a.discard)}).`, a.player);
+        if (isDrawTrigger(top)) p.drawn.push(...drawTo(s, 'treasure', resolveDrawTrigger(s, top, a.player, true), 'play'));
+        else p.drawn.push(top);
       } else {
         p.drawn.push(...drawTo(s, 'treasure', p.remaining, 'play'));
         p.remaining = 0;
@@ -1353,6 +1359,7 @@ export function apply(s: GameState, a: Action): ApplyResult {
   (H[a.type] as Handler<typeof a.type>).exec(n, a as never);
   if (!GM_ACTIONS.has(a.type)) n.flags.acted = true;
   drain(n);
+  sweepDrawTriggers(n);
   return { ok: true, state: n };
 }
 

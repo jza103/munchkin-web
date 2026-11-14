@@ -1,5 +1,5 @@
 // Game state construction and low-level zone operations (the skill's munchkin.py, in TypeScript).
-import { ALL_IDS, DOOR_IDS, TREASURE_IDS, deckOf, isRaceClassCard, nameOf } from './cards';
+import { baseId, ALL_IDS, DOOR_IDS, TREASURE_IDS, deckOf, isRaceClassCard, nameOf } from './cards';
 import { rollDie, seedFrom, shuffle } from './rng';
 import type { CardId, Deck, Gender, GameState, PlayerId, PlayerState } from './types';
 
@@ -187,21 +187,86 @@ export function drawOne(s: GameState, deck: Deck): CardId | null {
   return pile.pop() ?? null;
 }
 
-/** Draw n cards into a zone; returns the cards drawn (fewer if both pile and discards are empty). */
-export function drawTo(s: GameState, deck: Deck, n: number, to: ZoneName): CardId[] {
+const DRAW_TRIGGERS = new Set(['divine-intervention', 'hoard']);
+export function isDrawTrigger(card: CardId) {
+  return DRAW_TRIGGERS.has(baseId(card));
+}
+
+/**
+ * Resolve a card that takes effect the moment it is drawn. The card must already sit in a zone.
+ * Divine Intervention: every Cleric goes up a level (never to 10), then it is discarded.
+ * Hoard!: discarded; returns 3 (the extra Treasures the drawer is owed, face-up or face-down like the Hoard! itself).
+ */
+export function resolveDrawTrigger(s: GameState, card: CardId, who: PlayerId | null, faceUp: boolean): number {
+  const id = baseId(card);
+  if (id === 'divine-intervention') {
+    discard(s, card);
+    const clerics = s.order.filter((o) =>
+      s.players[o].equipped.some((c) => baseId(c) === 'cleric'),
+    );
+    addLog(
+      s,
+      'effect',
+      `Divine Intervention is drawn${who ? ` by ${who}` : ''}! ${clerics.length ? `${clerics.join(' and ')} (Cleric) go${clerics.length === 1 ? 'es' : ''} up a level.` : 'There are no Clerics, so nothing happens.'}`,
+      who ?? undefined,
+    );
+    for (const o of clerics) changeLevel(s, o, 1, false);
+    return 0;
+  }
+  if (id === 'hoard') {
+    discard(s, card);
+    addLog(s, 'effect', `Hoard! is drawn${who ? ` by ${who}` : ''}: 3 more Treasures, ${faceUp ? 'face-up' : 'face-down'}.`, who ?? undefined);
+    return 3;
+  }
+  return 0;
+}
+
+/**
+ * Draw n cards into a zone; returns the cards that stayed there (fewer if both pile and discards are empty).
+ * Draw-triggered cards resolve at once: Divine Intervention uses up its draw, Hoard! is replaced by 3 more Treasures.
+ * `faceUp` defaults to true when drawing to the table ("play").
+ */
+export function drawTo(s: GameState, deck: Deck, n: number, to: ZoneName, faceUp = to === 'play'): CardId[] {
   const out: CardId[] = [];
+  const who = to.includes('.') ? (to.split('.')[0] as PlayerId) : null;
   for (let i = 0; i < n; i++) {
     const c = drawOne(s, deck);
     if (!c) break;
     zone(s, to).push(c);
+    if (isDrawTrigger(c)) {
+      const extra = resolveDrawTrigger(s, c, who, faceUp);
+      if (extra) {
+        const got = drawTo(s, 'treasure', extra, to, faceUp);
+        if (faceUp && to !== 'play' && got.length) addLog(s, 'treasure', `${who} reveals the Hoard!: ${got.map(nameOf).join(', ')}.`, who ?? undefined);
+        out.push(...got);
+      }
+      continue;
+    }
     out.push(c);
   }
   return out;
 }
 
-export function deal(s: GameState, id: PlayerId) {
-  drawTo(s, 'door', 4, `${id}.hand`);
-  drawTo(s, 'treasure', 4, `${id}.hand`);
+/** Safety net: a draw-triggered card that reached a hand some other way (GM move, old save) resolves now. */
+export function sweepDrawTriggers(s: GameState) {
+  for (let guard = 0; guard < 10; guard++) {
+    let hit = false;
+    for (const id of s.order) {
+      for (const c of [...s.players[id].hand]) {
+        if (!isDrawTrigger(c)) continue;
+        hit = true;
+        const extra = resolveDrawTrigger(s, c, id, false);
+        if (extra) drawTo(s, 'treasure', extra, `${id}.hand`, false);
+      }
+    }
+    if (!hit) return;
+  }
+}
+
+/** Deal a fresh hand. A player coming back from the dead draws Hoard!'s Treasures face-up. */
+export function deal(s: GameState, id: PlayerId, backFromDead = false) {
+  drawTo(s, 'door', 4, `${id}.hand`, false);
+  drawTo(s, 'treasure', 4, `${id}.hand`, backFromDead);
 }
 
 // ---------------- levels ----------------

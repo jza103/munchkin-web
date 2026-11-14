@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { strength } from '../src/engine/rules';
 import { A, J, S, act, blank, err, expectConserved, give, kick, names, top } from './helpers';
+import { legalActions } from '../src/engine/legal';
 
 describe('kick open the door', () => {
   it('a monster starts a fight', () => {
@@ -326,18 +327,61 @@ describe('Go Up a Level', () => {
     expect(s.players[J].level).toBe(2);
   });
 
-  it('Divine Intervention raises every Cleric', () => {
+  it('Divine Intervention resolves when kicked open: every Cleric goes up, never to 10', () => {
     let s = blank();
     give(s, A, 'Cleric', 'equipped');
     give(s, S, 'Cleric', 'equipped');
-    s = act(s, { type: 'playCard', player: J, card: give(s, J, 'Divine Intervention') });
-    expect([s.players[J].level, s.players[A].level, s.players[S].level]).toEqual([1, 2, 2]);
+    s.players[S].level = 9;
+    s = kick(s, 'Divine Intervention');
+    expect([s.players[J].level, s.players[A].level, s.players[S].level]).toEqual([1, 2, 9]);
+    expect(names(s.discard_door)).toContain('Divine Intervention');
+    expect(s.phase).toBe('afterDoor');
   });
 
-  it('Hoard! draws 3 Treasures', () => {
+  it('Divine Intervention resolves when drawn face-down (Loot the Room) and never stays in a hand', () => {
+    let s = kick(blank(), 'Elf');
+    give(s, A, 'Cleric', 'equipped');
+    top(s, 'Divine Intervention');
+    s = act(s, { type: 'lootRoom', player: J });
+    expect(s.players[A].level).toBe(2);
+    expect(names(s.players[J].hand)).not.toContain('Divine Intervention');
+    expect(names(s.discard_door)).toContain('Divine Intervention');
+  });
+
+  it('Divine Intervention and Hoard! cannot be played from a hand; a stray copy resolves at once', () => {
     let s = blank();
-    s = act(s, { type: 'playCard', player: J, card: give(s, J, 'Hoard!') });
+    give(s, A, 'Cleric', 'equipped');
+    const di = give(s, J, 'Divine Intervention');
+    expect(legalActions(s, J).some((a) => a.type === 'playCard' && a.card === di)).toBe(false);
+    s = act(s, { type: 'log', text: 'x' } as never);
+    expect(s.players[A].level).toBe(2);
+    expect(s.players[J].hand).toHaveLength(0);
+  });
+
+  it('Hoard! drawn face-down gives 3 more Treasures face-down', () => {
+    let s = blank();
+    top(s, 'Hoard!');
+    s = act(s, { type: 'draw', deck: 'treasure', n: 1, dest: `${J}.hand` } as never);
     expect(s.players[J].hand).toHaveLength(3);
+    expect(names(s.players[J].hand)).not.toContain('Hoard!');
+    expect(names(s.discard_treasure)).toContain('Hoard!');
+  });
+
+  it('Hoard! drawn face-up puts its 3 Treasures face-up on the table', () => {
+    let s = blank();
+    top(s, 'Hoard!');
+    s = act(s, { type: 'draw', deck: 'treasure', n: 1, dest: 'play' } as never);
+    expect(s.play).toHaveLength(3);
+    expect(s.log.join(' ')).toMatch(/3 more Treasures, face-up/);
+  });
+
+  it('Hoard! in the new hand of a player back from the dead is drawn face-up', () => {
+    let s = blank();
+    s = act(s, { type: 'die', player: A } as never);
+    top(s, 'Hoard!');
+    s = act(s, { type: 'revive', player: A } as never);
+    expect(s.players[A].hand).toHaveLength(8 - 1 + 3);
+    expect(s.log.join(' ')).toMatch(/Alex reveals the Hoard!/);
   });
 });
 

@@ -351,6 +351,19 @@ describe('curses', () => {
     // or Alex could refuse and lose a level
   });
 
+  it('Chicken on Your Head leaves with a curse or Bad Stuff that takes headgear', () => {
+    const s = curse('Curse! Lose Your Headgear', (x) => {
+      give(x, A, 'Curse! Chicken on Your Head', 'curses');
+      give(x, A, 'Helm of Courage', 'equipped');
+    });
+    expect(s.players[A].curses).toEqual([]);
+    expect(s.players[A].equipped).toEqual([]);
+    const bare = curse('Curse! Lose Your Headgear', (x) => void give(x, A, 'Curse! Chicken on Your Head', 'curses'));
+    expect(bare.players[A].curses).toEqual([]);
+    const other = curse('Curse! Lose Your Footgear', (x) => void give(x, A, 'Curse! Chicken on Your Head', 'curses'));
+    expect(names(other.players[A].curses)).toEqual(['Curse! Chicken on Your Head']);
+  });
+
   it('Chicken on Your Head stays on you', () => {
     const s = curse('Curse! Chicken on Your Head');
     expect(names(s.players[A].curses)).toEqual(['Curse! Chicken on Your Head']);

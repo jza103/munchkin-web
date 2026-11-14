@@ -86,7 +86,9 @@ The card text in `cards.py` is abridged. Where it was ambiguous, the engine does
 - **Rat on a Stick:** you can use it from the table. Discarding it escapes every monster of Level 8 or lower in that combat, for that runner.
 - **Crabs:** there's no run roll, so only Instant Wall or Rat on a Stick avoids its Bad Stuff.
 - **Running:** the helper runs too and takes their own Bad Stuff. Each monster (and each Mate) needs its own roll.
-- **Chicken on Your Head:** it applies to every roll the cursed player makes (running, Bad Stuff rolls, Theft). It stays until a Wishing Ring removes it.
+- **Chicken on Your Head:** it applies to every roll the cursed player makes (running, Bad Stuff rolls, Theft). It stays until a Wishing Ring removes it, or until a curse or Bad Stuff that takes headgear hits the player (Lose Your Headgear and the "lose headgear" Bad Stuff). The chicken goes even if no headgear is worn.
+- **Divine Intervention:** it resolves the moment it is drawn, by any route: kicked open, looted face-down, dealt, taken with Resurrection or drawn after a reshuffle. Every Cleric goes up a level (never to 10) and the card is discarded. It uses up that draw and is never held in a hand.
+- **Hoard!:** it resolves the moment it is drawn and is replaced by 3 more Treasures. They are face-up if the Hoard! itself was drawn face-up (a shared combat reward, where they join the pool to split), otherwise face-down. A player coming back from the dead who finds it in their new hand reveals the 3 Treasures to the table (the "face-up if dead" case).
 - **Loaded Die:** it sets the face; modifiers still apply.
 - **Help Me Out Here!:** you must qualify for the borrowed item, but slot limits are ignored. The item goes back after the combat, or is discarded if its owner died.
 - **Transferral Potion:** the player who plays it chooses any living non-fighter. The old fighter escapes, and any helper leaves.
@@ -103,13 +105,9 @@ The card text in `cards.py` is abridged. Where it was ambiguous, the engine does
 - **Charity:** ties for lowest level share the cards round-robin. If you are the lowest, or tied for it, you discard.
 - **Gender:** each player picks a gender at the start. There is no sex-change curse in this card set.
 
-## Cards not fully implemented
+## Known limitations
 
-Every card has an effect handler, and a test checks that. These deviate slightly from the full card text:
-
-- **Divine Intervention:** it is played from the hand at any time. The real card resolves the moment it is drawn.
-- **Hoard!:** it always draws face-down. The text's "face-up if dead" case isn't modelled, because a dead player has no hand to play it from.
-- **Curse! Chicken on Your Head:** it is removed only by a Wishing Ring. Any other removal conditions on the full card aren't modelled.
+Every card has an effect handler, and a test checks that. No card is known to deviate from its text.
 
 **Bot limitations (not rule gaps):**
 
