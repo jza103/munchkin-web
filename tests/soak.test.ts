@@ -1,6 +1,7 @@
 // Real-play hardening: more seeds with mixed rival counts, a turn cap, and a legalActions/apply fuzz.
 import { describe, expect, it } from 'vitest';
-import { simulate } from '../src/bots/driver';
+import { botStep, simulate } from '../src/bots/driver';
+import { personalityFor } from '../src/bots/personalities';
 import { apply } from '../src/engine/actions';
 import { endOfTurnViolations, violations } from '../src/engine/invariants';
 import { legalActions } from '../src/engine/legal';
@@ -81,5 +82,32 @@ describe('fuzz: legalActions against apply', () => {
     }
     expect(legalChecked).toBeGreaterThan(5000);
     expect(illegalChecked).toBeGreaterThan(1000);
+  });
+});
+
+describe('save and resume', () => {
+  it('a game saved as JSON at any step (mid-combat, mid-prompt) resumes to the identical game', () => {
+    for (const seed of [81_001, 81_002, 81_003]) {
+      const snaps: { step: number; json: string }[] = [];
+      let step = 0;
+      const full = simulate({
+        seed,
+        rivals: 3,
+        onStep: (x) => {
+          step++;
+          if (step % 40 === 0 || (x.state.combat && x.state.pending && snaps.length < 30)) snaps.push({ step, json: JSON.stringify(x.state) });
+        },
+      });
+      expect(snaps.some((s) => (JSON.parse(s.json) as GameState).combat)).toBe(true);
+      for (const snap of snaps.slice(0, 12)) {
+        // replay from the reloaded save with the same bots: it must reach the same final state
+        let s = JSON.parse(snap.json) as GameState;
+        expect(violations(s)).toEqual([]);
+        const pers = (id: string) => personalityFor(id, s.order.indexOf(id));
+        for (let i = 0; i < 20000 && s.phase !== 'gameOver'; i++) s = botStep(s, pers, () => true)!.state;
+        expect(s.winners, `seed ${seed} from step ${snap.step}`).toEqual(full.state.winners);
+        expect(s.log.slice(-5)).toEqual(full.state.log.slice(-5));
+      }
+    }
   });
 });

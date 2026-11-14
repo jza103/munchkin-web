@@ -149,3 +149,9 @@ GM mode is off by default, and the game is fully playable offline without it. Tu
 ## Status
 
 All eight milestones are done: data, engine core, full rules, bots, UI with save/resume, deploy, Claude GM mode, and polish.
+
+From `HANDOFF.md`:
+
+- **Done:** card-accuracy gaps (task 1), bot trades, Cheat! and Illusion (task 3), soak, fuzz and invariant hardening (task 4).
+- **Partly done:** phone and iPad check (task 5). The opening and combat screens fit at 390px and 820px with no sideways scroll, and a reload mid-combat resumes the same fight. Full games have not been played by hand at those sizes.
+- **Still to do:** the one-by-one rulings audit (task 2) and the pre-private checklist (task 6). A scan found no API keys or personal data in the repo, and `npm run build` succeeds.
