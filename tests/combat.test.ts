@@ -400,6 +400,16 @@ describe('special monsters', () => {
     expect(combatTotals(s).player).toBe(5);
   });
 
+  it('Ghoulfiends: class powers still count (ruling)', () => {
+    let s = blank();
+    s.players[J].level = 5;
+    give(s, J, 'Warrior', 'equipped');
+    const d = give(s, J, 'Magic Missile');
+    s = kick(s, 'Ghoulfiends');
+    s = act(s, { type: 'power', player: J, power: 'berserk', discard: [d] });
+    expect(combatTotals(s).player).toBe(6);
+  });
+
   it('Insurance Salesman: fire does nothing', () => {
     let s = blank();
     give(s, J, 'Flaming Armor', 'equipped');
