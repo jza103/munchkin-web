@@ -1,5 +1,5 @@
 // Human-readable labels for actions and cards.
-import { cardOf, nameOf } from '../engine/cards';
+import { cardOf, goldOf, nameOf } from '../engine/cards';
 import { handlerFor } from '../engine/actions';
 import type { Action, CardId, GameState } from '../engine/types';
 
@@ -25,6 +25,55 @@ export function kindLabel(card: CardId): string {
     case 'other':
       return c.effect.op === 'goUpLevel' ? 'Go Up a Level' : c.deck === 'door' ? 'Door card' : 'Treasure';
   }
+}
+
+export interface Badge {
+  text: string;
+  tone: 'power' | 'gold' | 'danger' | 'info';
+  title: string;
+}
+
+/** The numbers that matter on a card, shown as chips on its tile. */
+export function badges(card: CardId): Badge[] {
+  const c = cardOf(card);
+  const out: Badge[] = [];
+  const gold = goldOf(card);
+  switch (c.kind) {
+    case 'monster':
+      out.push({ text: `🏆 ${c.treasures}`, tone: 'gold', title: `${c.treasures} Treasure if beaten` });
+      if (c.levelsGained !== 1) out.push({ text: `⬆ ${c.levelsGained}`, tone: 'power', title: `${c.levelsGained} levels if killed` });
+      if (c.undead) out.push({ text: 'Undead', tone: 'info', title: 'Undead monster' });
+      if (c.runMod) out.push({ text: `🏃 ${c.runMod > 0 ? '+' : ''}${c.runMod}`, tone: c.runMod > 0 ? 'info' : 'danger', title: `${c.runMod > 0 ? '+' : ''}${c.runMod} to run away` });
+      break;
+    case 'enhancer':
+      out.push({ text: `${c.monsterBonus > 0 ? '+' : ''}${c.monsterBonus}`, tone: c.monsterBonus > 0 ? 'danger' : 'power', title: 'Change to the monster\'s level' });
+      if (c.treasureDelta) out.push({ text: `🏆 ${c.treasureDelta > 0 ? '+' : ''}${c.treasureDelta}`, tone: 'gold', title: 'Change to its Treasure' });
+      break;
+    case 'item':
+      if (c.bonus) out.push({ text: `+${c.bonus}`, tone: 'power', title: `+${c.bonus} to your strength` });
+      if (c.big) out.push({ text: 'Big', tone: 'info', title: 'Big item: only one unless you are a Dwarf' });
+      break;
+    case 'oneShot':
+      if (c.bonus) out.push({ text: `±${c.bonus}`, tone: 'power', title: `+${c.bonus} to either side of a fight` });
+      break;
+    case 'curse':
+      out.push({ text: c.persistent ? 'Stays' : 'Once', tone: 'danger', title: c.persistent ? 'Stays on the victim' : 'Takes effect once' });
+      break;
+    default:
+      break;
+  }
+  if (gold > 0) out.push({ text: `🪙 ${gold}`, tone: 'gold', title: `Sells for ${gold} Gold Pieces` });
+  return out;
+}
+
+/** Big corner number for a tile: monster level or item bonus. */
+export function corner(card: CardId): string | null {
+  const c = cardOf(card);
+  if (c.kind === 'monster') return `L${c.level}`;
+  if (c.kind === 'item' && c.bonus) return `+${c.bonus}`;
+  if (c.kind === 'oneShot' && c.bonus) return `+${c.bonus}`;
+  if (c.kind === 'enhancer') return `${c.monsterBonus > 0 ? '+' : ''}${c.monsterBonus}`;
+  return null;
 }
 
 export function emoji(card: CardId): string {

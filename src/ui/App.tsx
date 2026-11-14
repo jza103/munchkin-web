@@ -9,7 +9,7 @@ import type { Action, CardId, GameState, Gender, Pending, PlayerId, PowerName } 
 import { actor } from '../bots/bot';
 import { botStep } from '../bots/driver';
 import { PERSONALITIES, personalityFor } from '../bots/personalities';
-import { cardsOfAction, describeAction, emoji, kindLabel } from './describe';
+import { badges, cardsOfAction, corner, describeAction, emoji, kindLabel } from './describe';
 import { SPEED_MS, type Settings, loadGame, loadSettings, saveGame, saveSettings } from './storage';
 import { type GmSettings, GmPanel, GmSettingsSheet, ProviderFields, loadGmSettings, loadKey, saveGmSettings, saveKey, useBuiltIn, useGm } from './gm';
 import { recap } from './recap';
@@ -294,10 +294,11 @@ function RivalStrip({ s, onCard }: { s: GameState; onCard: (c: CardId) => void }
                 {p.dead && <span title="Dead">💀</span>}
               </header>
               <div class="stats">
-                <span title="Level">L{p.level}</span>
-                <span title="Strength">💪{strength(s, id)}</span>
+                <span class="lvl" title="Level (10 wins)">L{p.level}</span>
+                <span title="Strength in a fight: level plus gear">💪{strength(s, id)}</span>
                 <span title="Hand: Door / Treasure">🂠 {handText(s, id)}</span>
               </div>
+              <LevelTrack level={p.level} />
               <div class="muted small">{raceClassText(s, id)}</div>
               {items.length > 0 && (
                 <div class="gear">
@@ -582,6 +583,7 @@ function MyTable({ s, me, onCard }: { s: GameState; me: PlayerId; onCard: (c: Ca
         <b>{me}</b> <span class="muted">({p.gender})</span> — Level <b>{p.level}</b> · Strength <b>{strength(s, me)}</b> · {raceClassText(s, me)}
         {p.dead && ' · 💀 dead (you revive next turn)'}
         {hasPower(p, 'sellDouble') && s.turn === me && !s.flags.halflingDoubleUsed && <span class="muted small"> · Halfling double-sell available</span>}
+        <LevelTrack level={p.level} />
       </header>
       <div class="tiles">
         {rc.map((c) => (
@@ -630,18 +632,40 @@ function Hand({ s, me, legal, onCard }: { s: GameState; me: PlayerId; legal: Act
   );
 }
 
+/** Ten pips showing how close a player is to Level 10. */
+function LevelTrack({ level }: { level: number }) {
+  return (
+    <span class={`track ${level >= 8 ? 'close' : ''}`} role="img" aria-label={`Level ${level} of 10`}>
+      {Array.from({ length: 10 }, (_, i) => (
+        <span class={`pip ${i < level ? 'on' : ''} ${i === 9 ? 'goal' : ''}`} key={i} />
+      ))}
+    </span>
+  );
+}
+
 function Tile({ card, label, hot, onClick, selected }: { card: CardId; label?: string; hot?: boolean; onClick?: () => void; selected?: boolean }) {
   const c = cardOf(card);
   return (
-    <button class={`tile ${c.deck} ${hot ? 'hot' : ''} ${selected ? 'selected' : ''}`} onClick={onClick}>
+    <button class={`tile ${c.deck} kind-${c.kind} ${hot ? 'hot' : ''} ${selected ? 'selected' : ''}`} onClick={onClick}>
       <span class="art" style={artStyle(card)} aria-hidden="true">
         {emoji(card)}
+        {corner(card) && <span class="corner">{corner(card)}</span>}
+        <span class="deckmark">{c.deck === 'door' ? '🚪' : '💰'}</span>
       </span>
       <span class="tile-top">
         <span class="muted small">{label ?? kindLabel(card)}</span>
       </span>
       <span class="tile-name">{nameOf(card)}</span>
       <span class="tile-text">{c.text}</span>
+      {badges(card).length > 0 && (
+        <span class="badges">
+          {badges(card).map((b) => (
+            <span class={`badge ${b.tone}`} title={b.title} key={b.text}>
+              {b.text}
+            </span>
+          ))}
+        </span>
+      )}
     </button>
   );
 }
