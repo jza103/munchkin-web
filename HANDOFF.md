@@ -1,6 +1,40 @@
 # Handoff: what's left
 
-**State at handoff:** all 8 milestones in `SPEC.md` are done. `tsc --noEmit` is clean and 326 tests pass, including 500 seeded bot games across 1 to 5 rivals. The engine, bots, UI with save/resume, GitHub Pages deploy, the optional GM mode and polish all exist. The work now is closing accuracy gaps and proving the game holds up in real play.
+**State at the original handoff:** all 8 milestones in `SPEC.md` are done. `tsc --noEmit` is clean and 326 tests pass, including 500 seeded bot games across 1 to 5 rivals. The engine, bots, UI with save/resume, GitHub Pages deploy, the optional GM mode and polish all exist. The work now is closing accuracy gaps and proving the game holds up in## Where work stopped (14 Nov 2026)
+
+`tsc --noEmit` is clean and 343 tests pass (500 bot games, a 150-game soak, a `legalActions`/`apply` fuzz, a save/resume round trip).
+
+| Task | State | What is left |
+| --- | --- | --- |
+| 1. Card accuracy | Done | Three card-text calls need Jason's decision (below) |
+| 2. Rulings audit | Partly done | Check the remaining rulings one by one; write the mismatch report |
+| 3. Bot gaps | Done | Nothing |
+| 4. Hardening | Done | Nothing |
+| 5. Phone and iPad | Partly done | Play full games by hand at both sizes |
+| 6. Before private | Partly done | Clean-checkout run from `npm ci`; stale-content pass on `README.md` |
+
+**Next step:** resume task 2, then finish 5 and 6.
+
+**Task 1 decisions for Jason.** These follow memory of the printed cards, not `reference/SKILL.md`, which is abridged:
+- Divine Intervention stops at Level 9 (the repo's existing ruling). The printed card may allow the winning level. Changing it would break the "Level 10 only by a kill" invariant.
+- Hoard! resolves when drawn; its 3 Treasures are face-up if the Hoard! was drawn face-up. "Face-up if dead" is read as: a player back from the dead who finds it in their new hand reveals the 3.
+- Chicken on Your Head is removed by any curse or Bad Stuff that takes headgear, even with none worn. The reference only says "stays on you".
+
+**Task 2 so far.** Of the seven rulings named below, four had part of the ruling unpinned and now have tests (the engine already matched each): Warrior helper ties, Malign Mirror played mid-combat, Income Tax refusal, Ghoulfiends class powers. Hippogriff, Net Troll and Platycore have tests but were not compared line by line with the card text. The other 40-odd rulings in `README.md` are unchecked. No mismatch has been found yet.
+
+**Task 5 so far.** At 390px and 820px the opening and combat screens have no sideways scroll, no page errors and no undersized buttons in combat, and a reload mid-combat resumes the same fight. Known issue: on a phone the charity prompt repeats the whole hand above the hand itself, which makes a long scroll.
+
+**Task 6 so far.** A scan found no API keys or personal data (only input placeholders and a dummy test key). `npm run build` succeeds.
+
+**Engine bugs found and fixed on the way** (each has a regression test):
+- Lending a Cheat!-ed item with Help Me Out Here! destroyed the Cheat! and returned the item into a full slot.
+- Super Munchkin could "replace" Half-Breed, leaving two races without a Half-Breed.
+
+**Also added, outside this list:** card tiles show their key numbers (corner level or bonus, chips for Treasure, gold, levels, run modifiers, Big, Undead), and every player has a ten-pip track to Level 10.
+
+## Task list
+
+ real play.
 
 Do these in order. Each task ends with tests passing and a commit.
 
