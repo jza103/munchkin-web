@@ -547,6 +547,7 @@ function raceClassErr(s: GameState, id: PlayerId, card: CardId, replace?: CardId
   const p = player(s, id);
   const c = cardOf(card);
   if (replace !== undefined) {
+    if (c.kind !== 'race' && c.kind !== 'class') return `${c.name} does not replace another card`;
     if (!p.equipped.includes(replace) || cardOf(replace).kind !== c.kind) return `You can only replace a ${c.kind} you have`;
   }
   if (c.kind === 'race') {

@@ -3,6 +3,7 @@ import { ALL_IDS, cardOf, itemOf } from './cards';
 import { allCards } from './state';
 import {
   bigInPlay,
+  handLimit,
   classCards,
   equippedItems,
   isCheated,
@@ -47,4 +48,11 @@ export function violations(s: GameState): string[] {
   if (!s.combat && !settling && s.play.length) out.push(`cards left in play: ${s.play.join(',')}`);
   if (s.phase === 'gameOver' && !s.winners.length) out.push('game over without a winner');
   return out;
+}
+
+/** Checks that only hold once a player's turn has ended: nobody alive is left over their hand limit. */
+export function endOfTurnViolations(s: GameState, ended: string): string[] {
+  const p = s.players[ended];
+  if (!p || p.dead) return [];
+  return p.hand.length > handLimit(p) ? [`${ended} ended the turn with ${p.hand.length} cards (limit ${handLimit(p)})`] : [];
 }

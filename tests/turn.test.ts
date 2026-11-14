@@ -385,6 +385,18 @@ describe('Go Up a Level', () => {
   });
 });
 
+describe('race and class edge cases', () => {
+  it('Super Munchkin cannot replace Half-Breed (found by the legalActions fuzz)', () => {
+    const s = blank();
+    const hb = give(s, J, 'Half-Breed', 'equipped');
+    give(s, J, 'Elf', 'equipped');
+    give(s, J, 'Dwarf', 'equipped');
+    const sm = give(s, J, 'Super Munchkin');
+    expect(err(s, { type: 'playRaceClass', player: J, card: sm, replace: hb })).toMatch(/does not replace/);
+    expect(legalActions(s, J).some((a) => a.type === 'playRaceClass' && a.card === sm && a.replace)).toBe(false);
+  });
+});
+
 describe('trading', () => {
   it('trade table items on your turn; the other player accepts or declines', () => {
     let s = blank();
