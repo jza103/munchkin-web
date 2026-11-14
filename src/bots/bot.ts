@@ -300,6 +300,8 @@ function interfere(v: GameState, id: PlayerId, pers: Personality, legal: Action[
       if (cc.kind === 'other' && cc.effect.op === 'goUpLevel') continue;
       if (cc.id === 'transferral-potion' && a.target?.player === id) continue;
       if (cc.id === 'wishing-ring' || cc.id === 'hoard' || cc.id === 'divine-intervention') continue;
+      // Illusion as a weapon: always to stop a win, otherwise only the spiteful bother
+      if (cc.id === 'illusion' && !winsGame && !chance(v, id, 'illusion', pers.spite)) continue;
     }
     const after = sim(v, a);
     if (!after) continue;
@@ -437,6 +439,8 @@ function onTurn(v: GameState, id: PlayerId, pers: Personality, legal: Action[]):
       );
       if (curse) return curse;
     }
+    const offer = proposeTrade(v, id, pers);
+    if (offer) return offer;
     const kick = legal.find((a) => a.type === 'kickDoor' && !a.resurrect);
     return kick ?? null;
   }
@@ -491,6 +495,13 @@ function improveTable(v: GameState, id: PlayerId, pers: Personality, legal: Acti
       if (after && equipError(after.players[id], c) === null) return unequip;
     }
   }
+  // Cheat!: put on the best item we otherwise couldn't use. Pushier, greedier bots cheat for smaller gains.
+  const cheatMin = 4 - Math.round(2 * Math.max(pers.aggression, pers.greed));
+  const cheats = (legal.filter((a) => a.type === 'playCard' && cardOf(a.card).id === 'cheat' && a.target?.card) as Extract<Action, { type: 'playCard' }>[])
+    .map((a) => ({ a, b: itemOf(a.target!.card!)?.bonus ?? 0 }))
+    .filter((x) => x.b >= cheatMin && equipError(P, x.a.target!.card!) !== null)
+    .sort((x, y) => y.b - x.b);
+  if (cheats.length) return cheats[0].a;
   // Big items in hand: carry them if allowed (Dwarves hoard)
   // Go Up a Level / Hoard!
   const lvl = legal.find((a) => a.type === 'playCard' && cardOf(a.card).kind === 'other' && (cardOf(a.card) as { effect: { op: string } }).effect.op === 'goUpLevel');
@@ -511,6 +522,40 @@ function improveTable(v: GameState, id: PlayerId, pers: Personality, legal: Acti
     }
   }
   return null;
+}
+
+/**
+ * Offer one trade a turn: an item on our table that we can't use, for an item the other player can't use
+ * and we can. Bots rarely trade with the leader (the more spiteful, the less), and greedy bots want a better deal.
+ */
+function proposeTrade(v: GameState, id: PlayerId, pers: Personality): Action | null {
+  if (v.events.some((e) => e.type === 'trade' && e.turn === v.turnNumber && e.player === id)) return null;
+  const P = v.players[id];
+  const table = (x: PlayerId) => [...equippedItems(v.players[x]), ...v.players[x].carried.filter((c) => itemOf(c))];
+  const spare = table(id).filter((c) => !qualifies(P, itemOf(c)!));
+  if (!spare.length) return null;
+  let best: { a: Action; score: number } | null = null;
+  for (const o of v.order) {
+    if (o === id || v.players[o].dead) continue;
+    if (isLeader(v, o) && v.players[o].level > P.level && !chance(v, id, `trade-leader-${o}`, (1 - pers.spite) * 0.3)) continue;
+    const O = v.players[o];
+    for (const get of table(o)) {
+      const gi = itemOf(get)!;
+      if (qualifies(O, gi) || !qualifies(P, gi) || gi.bonus <= 0) continue;
+      if (equipError(P, get) !== null && gi.slot !== 'none') continue;
+      for (const give of spare) {
+        const mine = itemOf(give)!;
+        if (!qualifies(O, mine)) continue;
+        // greedy bots won't hand over much more than they get
+        if (mine.bonus > gi.bonus + Math.round(2 * (1 - pers.greed))) continue;
+        const a: Action = { type: 'trade', player: id, to: o, give: [give], get: [get] };
+        if (check(v, a) !== null) continue;
+        const score = gi.bonus - mine.bonus * pers.greed;
+        if (!best || score > best.score) best = { a, score };
+      }
+    }
+  }
+  return best?.a ?? null;
 }
 
 function sellPlan(v: GameState, id: PlayerId, pers: Personality): Action | null {

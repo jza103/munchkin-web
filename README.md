@@ -91,6 +91,7 @@ The card text in `cards.py` is abridged. Where it was ambiguous, the engine does
 - **Hoard!:** it resolves the moment it is drawn and is replaced by 3 more Treasures. They are face-up if the Hoard! itself was drawn face-up (a shared combat reward, where they join the pool to split), otherwise face-down. A player coming back from the dead who finds it in their new hand reveals the 3 Treasures to the table (the "face-up if dead" case).
 - **Loaded Die:** it sets the face; modifiers still apply.
 - **Help Me Out Here!:** you must qualify for the borrowed item, but slot limits are ignored. The item goes back after the combat, or is discarded if its owner died.
+- **Help Me Out Here! and Cheat!:** if the borrowed item was equipped with Cheat!, the Cheat! waits and the item comes back still equipped. Any other returned item goes back to its old place, or is carried if that slot has since been filled.
 - **Transferral Potion:** the player who plays it chooses any living non-fighter. The old fighter escapes, and any helper leaves.
 - **Pollymorph Potion:** whoever plays it takes the treasure.
 - **Magic Lamp:** only the turn player, in their own combat.
@@ -109,10 +110,7 @@ The card text in `cards.py` is abridged. Where it was ambiguous, the engine does
 
 Every card has an effect handler, and a test checks that. No card is known to deviate from its text.
 
-**Bot limitations (not rule gaps):**
-
-- Bots never propose trades. They do accept or decline yours.
-- Bots never use Cheat! or Illusion offensively. They do play other cards that deny a win.
+**Bots:** they propose one trade a turn (an item they can't use for one the other player can't use, rarely with the leader), equip strong unusable items with Cheat!, and play Illusion against other players' fights. Each is weighted by the personality's `aggression`, `greed` and `spite`.
 
 ## Claude GM mode (optional)
 
@@ -142,7 +140,8 @@ GM mode is off by default, and the game is fully playable offline without it. Tu
 
 ## Polish
 
-- **Card art:** placeholder art for each card (a colour band by card type, plus its emoji).
+- **Card art:** placeholder art for each card (a colour band by card type, plus its emoji). Each tile shows its key numbers: monster level or item bonus in the corner, and chips for Treasure, gold value, levels gained, run modifiers, Big and Undead.
+- **Level tracks:** every player has a ten-pip track showing how close they are to Level 10. It turns red at Level 8.
 - **Sound:** synthesized sound effects for doors, rolls, curses, level changes, deaths, wins and the game's end. Toggle them with 🔊/🔇.
 - **Rival speed:** slow, normal, fast or instant. You can also pause the rivals.
 - **End-of-game recap:** the 3 to 4 moments that decided the game, each with a 🎓 lesson. It works without Claude; with GM mode on, Claude narrates its own recap too.

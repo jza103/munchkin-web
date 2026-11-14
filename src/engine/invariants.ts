@@ -40,7 +40,7 @@ export function violations(s: GameState): string[] {
     if (slots.head > 1 || slots.armor > 1 || slots.foot > 1 || slots.hands > 2) out.push(`${id} slots ${JSON.stringify(slots)}`);
     if (!isDwarf(p) && !settling && bigInPlay(p).filter((c) => !isCheated(p, c) && c !== borrowed).length > 1) out.push(`${id} two Big items`);
     if (p.dead && !settling && (p.hand.length || p.carried.length || equippedItems(p).length)) out.push(`${id} dead with cards`);
-    if (p.cheat && (!p.equipped.includes(p.cheat.card) || !p.equipped.includes(p.cheat.item))) out.push(`${id} dangling Cheat!`);
+    if (p.cheat && (!p.equipped.includes(p.cheat.card) || !(p.equipped.includes(p.cheat.item) || borrowed === p.cheat.item))) out.push(`${id} dangling Cheat!`);
     for (const c of p.equipped) if (cardOf(c).id === 'cheat' && p.cheat?.card !== c) out.push(`${id} unattached Cheat!`);
   }
   if (!!s.combat !== (s.phase === 'combat')) out.push(`combat/phase mismatch: ${s.phase}`);

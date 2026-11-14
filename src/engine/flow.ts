@@ -3,6 +3,7 @@
 import { cardOf, goldOf, isRaceClassCard, itemOf, monsterOf, nameOf } from './cards';
 import { combatTotals as combatTotalsSafe, combatants, monsterLevels, monsterTreasure, removeMonster } from './combat';
 import {
+  equipError,
   bigInPlay,
   classCards,
   curseRules,
@@ -727,8 +728,11 @@ export function returnBorrowed(s: GameState) {
     discard(s, b.card);
     return addLog(s, 'effect', `${nameOf(b.card)} can't go back to ${b.owner} (dead) and is discarded.`, b.owner);
   }
-  moveCard(s, b.card, `${b.owner}.${b.zone}`);
-  addLog(s, 'effect', `${nameOf(b.card)} goes back to ${b.owner}.`, b.owner);
+  const owner = player(s, b.owner);
+  // back where it was, unless that slot has been filled meanwhile (a Cheat!-ed item keeps its place)
+  const fits = b.zone !== 'equipped' || owner.cheat?.item === b.card || equipError(owner, b.card) === null;
+  moveCard(s, b.card, `${b.owner}.${fits ? b.zone : 'carried'}`);
+  addLog(s, 'effect', `${nameOf(b.card)} goes back to ${b.owner}${fits ? '' : ' (carried: no free slot)'}.`, b.owner);
   // the owner may have lost the race/class it needs, or picked up another Big item, meanwhile
   normalize(s, b.owner);
   now(s, { t: 'checkBig', player: b.owner });

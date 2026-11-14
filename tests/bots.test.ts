@@ -139,4 +139,75 @@ describe('regressions found by the 500-game run', () => {
     expect(s.players[A].carried).toEqual([ham]);
     expectConserved(s);
   });
+
+  it('a Cheat!-ed item lent out with Help Me Out Here! comes back still Cheat!-ed', () => {
+    let s = blank();
+    give(s, A, 'Flaming Armor', 'equipped');
+    const sw = give(s, A, 'Short Wide Armor');
+    s.turn = A;
+    s = act(s, { type: 'playCard', player: A, card: give(s, A, 'Cheat!'), target: { card: sw } });
+    give(s, J, 'Dwarf', 'equipped');
+    s.turn = J;
+    s.flags.kicked = false;
+    s = kick(s, 'Pit Bull');
+    s = act(s, { type: 'playCard', player: J, card: give(s, J, 'Help Me Out Here!'), target: { card: sw } });
+    expect(s.players[A].cheat).not.toBeNull();
+    s = act(s, { type: 'fight', player: J });
+    while (s.pending?.type === 'combatWindow') s = act(s, { type: 'pass', player: s.pending.queue[0] });
+    expect(s.combat).toBeNull();
+    expect(s.players[A].equipped).toContain(sw);
+    expect(s.players[A].cheat?.item).toBe(sw);
+    expectConserved(s);
+  });
+
+  it('propose a trade: an item they cannot use for one the other player cannot use', () => {
+    let s = blank();
+    s.turn = A;
+    give(s, A, 'Elf', 'equipped');
+    give(s, S, 'Dwarf', 'equipped');
+    give(s, A, 'Bad-Ass Bandana', 'carried'); // Humans only: no use to Alex (Elf) or Sam (Dwarf)
+    give(s, J, 'Bow with Ribbons', 'carried'); // Elves only: no use to Jason (Human)
+    const a = decide(s, A);
+    expect(a).toMatchObject({ type: 'trade', to: J });
+    s = act(s, a);
+    expect(s.pending).toMatchObject({ type: 'trade', player: J, from: A });
+    s = act(s, { type: 'respondTrade', player: J, accept: true });
+    expect(s.players[A].carried.map((c) => c.split('#')[0])).toContain('bow-with-ribbons');
+    // only one offer a turn
+    expect(decide(act(blankTradeDeclined(), { type: 'respondTrade', player: J, accept: false }), A).type).not.toBe('trade');
+  });
+
+  it('use Cheat! to equip a strong item they could not otherwise use', () => {
+    let s = blank();
+    s.turn = A;
+    give(s, A, 'Cheat!');
+    give(s, A, 'Bow with Ribbons'); // +4, Elves only
+    const a = decide(s, A);
+    expect(a).toMatchObject({ type: 'playCard' });
+    s = act(s, a);
+    expect(s.players[A].cheat).not.toBeNull();
+    expect(strength(s, A)).toBe(5);
+  });
+
+  it('use Illusion to stop a Level 10 win', () => {
+    let s = blank();
+    s.players[J].level = 9;
+    s = kick(s, 'Pit Bull');
+    give(s, A, 'Illusion');
+    give(s, A, 'Plutonium Dragon');
+    s = act(s, { type: 'fight', player: J });
+    const a = decide(s, A);
+    expect(a).toMatchObject({ type: 'playCard' });
+    s = act(s, a);
+    expect(s.log.join(' ')).toMatch(/Alex plays Illusion/);
+  });
 });
+
+function blankTradeDeclined(): GameState {
+  const s = blank();
+  s.turn = A;
+  give(s, A, 'Elf', 'equipped');
+  give(s, A, 'Bad-Ass Bandana', 'carried');
+  give(s, J, 'Bow with Ribbons', 'carried');
+  return act(s, decide(s, A));
+}

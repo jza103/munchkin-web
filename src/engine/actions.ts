@@ -285,8 +285,9 @@ export const CARD_HANDLERS: Record<string, CardHandler> = {
       const z = locate(s, item)!;
       const owner = z.slice(0, z.lastIndexOf('.'));
       toPlay(s, card);
-      moveCard(s, item, `${id}.equipped`);
+      // record the loan first, so the owner's Cheat! on this item waits for it to come back
       s.combat!.borrowed = { card: item, owner, zone: z.endsWith('equipped') ? 'equipped' : 'carried' };
+      moveCard(s, item, `${id}.equipped`);
       addLog(s, 'play', `${id} plays Help Me Out Here! and borrows ${nameOf(item)} from ${owner} for this combat.`, id);
     },
   },

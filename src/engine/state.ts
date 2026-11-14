@@ -148,7 +148,9 @@ function fixCheats(s: GameState) {
   for (const id of s.order) {
     const p = s.players[id];
     if (!p.cheat) continue;
-    if (p.equipped.includes(p.cheat.card) && p.equipped.includes(p.cheat.item)) continue;
+    // an item out on loan (Help Me Out Here!) comes back after the combat, so its Cheat! waits for it
+    const onLoan = s.combat?.borrowed?.card === p.cheat.item && s.combat.borrowed.owner === id;
+    if (p.equipped.includes(p.cheat.card) && (p.equipped.includes(p.cheat.item) || onLoan)) continue;
     const ch = p.cheat.card;
     p.cheat = null;
     if (p.equipped.includes(ch)) {
