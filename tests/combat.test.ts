@@ -34,6 +34,20 @@ describe('winning a fight', () => {
     expect(combatTotals(s).playerWins).toBe(true);
   });
 
+  it('a Warrior helper also wins ties (ruling: Warrior ties)', () => {
+    let s = blank();
+    s.players[J].level = 4;
+    s.players[A].level = 4;
+    give(s, A, 'Warrior', 'equipped');
+    s = kick(s, 'Harpies'); // L4
+    s.combat!.bonuses.push({ card: 'x', by: J, side: 'monster', value: 4, fire: false }); // 8
+    expect(combatTotals(s).playerWins).toBe(false);
+    s = act(s, { type: 'askHelp', player: J, target: A, offer: 1 });
+    s = act(s, { type: 'respondHelp', player: A, accept: true });
+    expect(combatTotals(s).player).toBe(8);
+    expect(combatTotals(s).playerWins).toBe(true);
+  });
+
   it('2-level monsters give 2 levels', () => {
     let s = blank();
     s.players[J].level = 5;
