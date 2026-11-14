@@ -351,6 +351,20 @@ describe('curses', () => {
     // or Alex could refuse and lose a level
   });
 
+  it('Income Tax: choosing to pay nothing costs a level (ruling)', () => {
+    let s = blank();
+    for (const id of [A, S, J]) s.players[id].level = 4;
+    const bow = give(s, J, 'Bow with Ribbons', 'carried'); // 800
+    give(s, A, 'Mithril Armor', 'carried');
+    give(s, A, 'Leather Armor', 'carried');
+    s.turn = S;
+    s = act(s, { type: 'playCard', player: S, card: give(s, S, 'Curse! Income Tax'), target: { player: J } });
+    s = act(s, { type: 'chooseCards', player: J, cards: [bow] });
+    s = act(s, { type: 'chooseCards', player: A, cards: [] });
+    expect(s.players[A].level).toBe(3);
+    expect(s.players[A].carried).toHaveLength(2);
+  });
+
   it('Chicken on Your Head leaves with a curse or Bad Stuff that takes headgear', () => {
     const s = curse('Curse! Lose Your Headgear', (x) => {
       give(x, A, 'Curse! Chicken on Your Head', 'curses');

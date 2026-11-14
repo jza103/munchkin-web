@@ -487,6 +487,17 @@ describe('special monsters', () => {
     expect(s.players[J].curses).toEqual([]);
     expect(s.discard_door).toContain(m);
   });
+
+  it('Malign Mirror played during your combat applies to that combat (ruling)', () => {
+    let s = blank();
+    s.players[J].level = 2;
+    give(s, J, 'Boots of Butt-Kicking', 'equipped');
+    s = kick(s, 'Lame Goblin');
+    expect(combatTotals(s).player).toBe(4);
+    s = act(s, { type: 'playCard', player: A, card: give(s, A, 'Curse! Malign Mirror'), target: { player: J } });
+    s = passAll(s);
+    expect(combatTotals(s).player).toBe(2);
+  });
 });
 
 describe('the fighter must commit', () => {
